@@ -1,0 +1,313 @@
+@import url('https://fonts.googleapis.com/css2?family=Bowlby+One:wght@400&family=Baloo:wght@400;500;600;700&family=Roboto:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 14px;
+
+  /* Colores inspirados en cafetería artesanal */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  /* Verde principal de cafetería */
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --primary-light: #a9dfd8;
+
+  /* Tonos terrosos */
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+
+  /* Grises cálidos */
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --input-background: #f8f6f3;
+
+  /* Colores de estado */
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --warning: #d4761e;
+  --warning-foreground: #ffffff;
+  --success: #0b7176;
+  --success-foreground: #ffffff;
+
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+
+  /* Fuentes */
+  --font-display: 'Bowlby One', cursive;
+  --font-body: 'Baloo', cursive;
+  --font-ui: 'Roboto', sans-serif;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --primary-light: #4a9a9e;
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --input-background: #2d2a25;
+  --ring: oklch(0.556 0 0);
+  --success: #0b7176;
+  --success-foreground: #ffffff;
+  --warning: #d4761e;
+  --warning-foreground: #ffffff;
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: #ffffff;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-light: var(--primary-light);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .font-ui {
+    font-family: var(--font-ui);
+  }
+}
+
+/**
+ * Base typography
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--color-foreground);
+    }
+
+    h2 {
+      font-family: var(--font-body);
+      font-size: 1.875rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--color-foreground);
+    }
+
+    h3 {
+      font-family: var(--font-body);
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--color-foreground);
+    }
+
+    h4 {
+      font-family: var(--font-body);
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--color-foreground);
+    }
+
+    p {
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--color-foreground);
+    }
+
+    label {
+      font-family: var(--font-ui);
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--color-foreground);
+    }
+
+    button {
+      font-family: var(--font-ui);
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    input, textarea, select {
+      font-family: var(--font-ui);
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* Clases utilitarias para la estética de cafetería */
+.bg-coffee-light { background-color: #f4f1ec; }
+.bg-coffee-medium { background-color: #e6dcc9; }
+.bg-coffee-dark { background-color: #8b6f47; }
+.bg-surf-primary { background-color: #0b7176; }
+.bg-surf-light { background-color: #a9dfd8; }
+.text-coffee-dark { color: #2d2a25; }
+.text-coffee-medium { color: #6b645c; }
+.text-surf-primary { color: #0b7176; }
+
+/* Efectos y texturas */
+.card-warm {
+  background: linear-gradient(135deg, #ffffff 0%, #faf8f5 100%);
+  box-shadow: 0 4px 20px rgba(45, 42, 37, 0.08);
+}
+
+.dark .card-warm {
+  background: linear-gradient(135deg, #2d2a25 0%, #1a1714 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.button-surf {
+  background: linear-gradient(135deg, #0b7176 0%, #097a7f 100%);
+  box-shadow: 0 2px 8px rgba(11, 113, 118, 0.3);
+}
+
+.button-outline-surf {
+  background: transparent;
+  border: 2px solid #0b7176;
+  color: #0b7176;
+  box-shadow: 0 2px 8px rgba(11, 113, 118, 0.1);
+}
+
+.button-outline-surf:hover {
+  background: rgba(11, 113, 118, 0.05);
+}
+
+.dark .button-outline-surf {
+  border-color: #0b7176;
+  color: #0b7176;
+}
+
+.nav-warm {
+  background: linear-gradient(90deg, #faf8f5 0%, #f4f1ec 100%);
+  backdrop-filter: blur(10px);
+}
+
+.dark .nav-warm {
+  background: linear-gradient(90deg, #2d2a25 0%, #1a1714 100%);
+  backdrop-filter: blur(10px);
+}
+
+/* Animaciones para transiciones de modo oscuro */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dropdown shadow */
+.dropdown-shadow {
+  box-shadow: 0 10px 25px rgba(45, 42, 37, 0.15);
+}
+
+.dark .dropdown-shadow {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
