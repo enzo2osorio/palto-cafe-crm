@@ -5,16 +5,18 @@ import { Dashboard } from "./app/Dashboard/dashboard";
 import { NoDeberianEntrar } from "./app/no-deberian-entrar";
 import { DashboardLayout } from "./app/Layout/dashboard-layout";
 import { EmpleadosModule } from "./components/Dashboard/empleados-module";
-import { ProductosModule } from "./components/Dashboard/productos-module";
+import { ProductosModule } from "./components/Dashboard/Productos-module/productos-module";
 import { ProveedoresModule } from "./components/Dashboard/proveedores-module";
 import { ReportesModule } from "./components/Dashboard/reportes-module";
 import { CajaModule } from "./components/Dashboard/caja-module";
 import { ComprobantesModule } from "./components/Dashboard/comprobantes-module";
+import { ThemeProvider } from "./components/ui/theme-provider";
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
+    <ThemeProvider>
   <BrowserRouter>
-    <Routes>
+      <Routes>
     <Route index element={<NoDeberianEntrar/>} />
     
     {/* <Route element={<AuthLayout />}>
@@ -33,4 +35,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </Route>
   </Routes>
   </BrowserRouter>
+    </ThemeProvider>
 );

@@ -311,3 +311,22 @@ html {
 .dark .dropdown-shadow {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
+
+select::-webkit-inner-spin-button,
+select::-webkit-outer-spin-button,
+select::-webkit-search-decoration,
+select::-webkit-search-cancel-button,
+select::-webkit-search-results-button,
+select::-webkit-search-results-decoration {
+  display: none;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}

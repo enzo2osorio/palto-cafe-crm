@@ -1,3 +1,4 @@
+import type { Option } from "@/components/ui/SelectCustom";
 import type { ProductosProps } from "@/types/productos";
 
 
@@ -6,7 +7,7 @@ import type { ProductosProps } from "@/types/productos";
       id: "1",
       name: "Pastel de frutos rojos",
       category: "Postres",
-      price: 2160,
+      price: "2160",
       cost: "1200",
       stock: "15",
       soldToday: "25",
@@ -19,7 +20,7 @@ import type { ProductosProps } from "@/types/productos";
       id: "2",
       name: "Café cortado",
       category: "Bebidas",
-      price: 1025,
+      price: "1025",
       cost: "400",
       stock: "0",
       soldToday: "40",
@@ -32,7 +33,7 @@ import type { ProductosProps } from "@/types/productos";
       id: "3",
       name: "Pan con palta",
       category: "Comidas",
-      price: 2312,
+      price: "2312",
       cost: "1100",
       stock: "8",
       soldToday: "16",
@@ -45,7 +46,7 @@ import type { ProductosProps } from "@/types/productos";
       id: "4",
       name: "Cookie de ciruela",
       category: "Postres",
-      price: 2833,
+      price: "2833",
       cost: "1500",
       stock: "22",
       soldToday: "12",
@@ -58,7 +59,7 @@ import type { ProductosProps } from "@/types/productos";
       id: "5",
       name: "Cappuccino",
       category: "Bebidas",
-      price: 1450,
+      price: "1450",
       cost: "500",
       stock: "0",
       soldToday: "35",
@@ -71,7 +72,7 @@ import type { ProductosProps } from "@/types/productos";
       id: "6",
       name: "Sandwich de jamón",
       category: "Comidas",
-      price: 3200,
+      price: "3200",
       cost: "1800",
       stock: "12",
       soldToday: "18",
@@ -82,4 +83,21 @@ import type { ProductosProps } from "@/types/productos";
     }
   ];
 
-  export const categories = ["todos", "Bebidas", "Comidas", "Postres"];
+  export const categories : Option[] = [
+    {
+      value: "Todas las categorias",
+      label: "Todas las categorias"
+    },
+    {
+      value: "Bebidas",
+      label: "Bebidas"
+    },
+    {
+      value: "Comidas",
+      label: "Comidas"
+    },
+    {
+      value: "Postres",
+      label: "Postres"
+    }
+  ];

@@ -15,23 +15,21 @@ import {
   Sun,
   LogOut
 } from 'lucide-react';
+import { useTheme } from '../ui/theme-provider';
 
-interface NavigationProps {
-  darkMode: boolean;
-  toggleDarkMode: () => void;
-}
 
-export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
+export function Navbar() {
+  const location = useLocation();
+  const [activeModule, setActiveModule] = useState(location.pathname.split('/')[2] || 'dashboard'); 
+  
   const [showRegistrosDropdown, setShowRegistrosDropdown] = useState(false);
   const [showFlujoCajaDropdown, setShowFlujoCajaDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);    
-  const location = useLocation();
-  const [activeModule, setActiveModule] = useState(location.pathname.split('/')[2] || 'dashboard'); 
   const registrosRef = useRef<HTMLDivElement>(null);
   const flujoCajaRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-    
+  const { theme, setTheme } = useTheme();  
   useEffect(() => {
     // Actualizar el módulo activo según la ruta actual
     const path = location.pathname.split('/')[2];
@@ -57,7 +55,7 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
 
   const profileItems = [
     { id: 'configuracion', label: 'Configuración', icon: Settings },
-    { id: 'modo-oscuro', label: darkMode ? 'Modo Claro' : 'Modo Oscuro', icon: darkMode ? Sun : Moon },
+    { id: 'modo-oscuro', label: theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro', icon: theme === 'dark' ? Sun : Moon },
     { id: 'cerrar-sesion', label: 'Cerrar Sesión', icon: LogOut },
   ];
 
@@ -94,7 +92,8 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
 
   const handleProfileClick = (itemId: string) => {
     if (itemId === 'modo-oscuro') {
-      toggleDarkMode();
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+      
     } 
     else if (itemId === 'configuracion') {
         //TODO: implementar un popup de configuracion
@@ -115,10 +114,10 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
             navigate('/dashboard');
             setActiveModule('dashboard');
           }}
-          className="flex items-center space-x-3 hover:opacity-80 rounded-full overflow-hidden transition-opacity"
+          className="group/buttonHero flex items-center cursor-pointer space-x-3 rounded-full overflow-hidden transition-opacity"
         >
-          <div className={`w-16 h-16 rounded-full ${activeModule === 'dashboard' ? "rotate-12" : "rotate-0"}`}>
-            <img src="/images/logo-acantilados.webp" alt="Logo hero"/>
+          <div className={`w-20 rounded-full overflow-hidden ${activeModule === 'dashboard' ? "rotate-12" : "rotate-0"}`}>
+            <img src="/images/logo-acantilados.webp" alt="Logo hero" className='group-hover/buttonHero:scale-110 transition-transform' />
           </div>
         </button>
 
@@ -132,7 +131,7 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
                 setShowFlujoCajaDropdown(false);
                 setShowProfileDropdown(false);
               }}
-              className={`flex items-center space-x-2 font-ui font-medium text-lg transition-all duration-200 ${
+              className={`flex items-center cursor-pointer space-x-2 font-ui font-medium text-lg transition-all duration-200 ${
                 ['productos', 'proveedores', 'empleados'].includes(activeModule)
                   ? 'text-foreground underline decoration-2 underline-offset-4' 
                   : 'text-muted-foreground hover:text-foreground'
@@ -151,7 +150,7 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
                     <button
                       key={item.id}
                       onClick={() => handleRegistroClick(item.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 font-ui text-left hover:bg-muted transition-colors ${
+                      className={`w-full flex cursor-pointer items-center space-x-3 px-4 py-3 font-ui text-left hover:bg-muted transition-colors ${
                         activeModule === item.id ? 'text-primary bg-primary/5' : 'text-foreground'
                       }`}
                     >
@@ -172,7 +171,7 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
                 setShowRegistrosDropdown(false);
                 setShowProfileDropdown(false);
               }}
-              className={`flex items-center space-x-2 font-ui font-medium text-lg transition-all duration-200 ${
+              className={`flex items-center cursor-pointer space-x-2 font-ui font-medium text-lg transition-all duration-200 ${
                 ['caja', 'comprobantes'].includes(activeModule)
                   ? 'text-foreground underline decoration-2 underline-offset-4' 
                   : 'text-muted-foreground hover:text-foreground'
@@ -191,7 +190,7 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
                     <button
                       key={item.id}
                       onClick={() => handleFlujoCajaClick(item.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 font-ui text-left hover:bg-muted transition-colors ${
+                      className={`w-full flex cursor-pointer items-center space-x-3 px-4 py-3 font-ui text-left hover:bg-muted transition-colors ${
                         activeModule === item.id ? 'text-primary bg-primary/5' : 'text-foreground'
                       }`}
                     >
@@ -212,7 +211,7 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
               setShowFlujoCajaDropdown(false);
               setShowProfileDropdown(false);
             }}
-            className={`flex items-center space-x-2 font-ui font-medium text-lg transition-all duration-200 ${
+            className={`flex items-center cursor-pointer space-x-2 font-ui font-medium text-lg transition-all duration-200 ${
               activeModule === 'reportes'
                 ? 'text-foreground underline decoration-2 underline-offset-4' 
                 : 'text-muted-foreground hover:text-foreground'
@@ -231,7 +230,7 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
               setShowRegistrosDropdown(false);
               setShowFlujoCajaDropdown(false);
             }}
-            className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+            className="flex items-center cursor-pointer space-x-3 hover:opacity-80 transition-opacity"
           >
             <div className="w-16 h-16 bg-muted-foreground/20 rounded-full flex items-center justify-center">
               <div className="w-12 h-12 bg-muted-foreground/30 rounded-full"></div>
@@ -247,7 +246,7 @@ export function Navbar({darkMode, toggleDarkMode} : NavigationProps) {
                   <button
                     key={item.id}
                     onClick={() => handleProfileClick(item.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 font-ui text-left hover:bg-muted transition-colors ${
+                    className={`w-full flex items-center cursor-pointer space-x-3 px-4 py-3 font-ui text-left hover:bg-muted transition-colors ${
                       item.id === 'cerrar-sesion' ? 'text-destructive hover:bg-destructive/10' : 'text-foreground'
                     }`}
                   >
