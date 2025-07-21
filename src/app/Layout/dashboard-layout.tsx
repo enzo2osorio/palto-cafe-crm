@@ -1,6 +1,5 @@
 import { Outlet } from "react-router"
 import { Navbar } from "../../components/Layout/Navbar"
-import { useEffect, useState } from "react";
 
 export const DashboardLayout = () => {
 
