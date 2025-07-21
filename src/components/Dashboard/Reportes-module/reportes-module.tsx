@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { BarChart3, PieChart, TrendingUp, TrendingDown, Download, RefreshCw } from 'lucide-react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { BarChart3, PieChart, TrendingUp, TrendingDown } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ventasPorDia, ventasPorCategoria, gastosPorCategoria,metricsComparativas, topProductos } from '@/utils/reportes-blank';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { formatNumber } from '@/lib/formatNumber';
+import { ButtonsControlReportes } from './ButtonsControlReportes';
 
 export function ReportesModule() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [selectedPeriod, setSelectedPeriod] = useState('mes');
+  const [selectedPeriod, setSelectedPeriod] = useState('semana');
 
   return (
     <div className="space-y-8">
@@ -22,29 +23,10 @@ export function ReportesModule() {
             REPORTES & <span className="text-primary">ANALÍTICAS</span>
           </h1>
         </div>
-        
-        <div className="flex items-center space-x-4">
-          <select
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="bg-input-background border-0 rounded-2xl px-4 py-2 font-ui font-medium text-foreground"
-          >
-            <option value="semana">Esta semana</option>
-            <option value="mes">Este mes</option>
-            <option value="trimestre">Este trimestre</option>
-            <option value="año">Este año</option>
-          </select>
-          
-          <Button className="button-surf text-white font-ui font-medium px-4 py-2 rounded-2xl">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualizar
-          </Button>
-          
-          <Button variant="outline" className="font-ui font-medium px-4 py-2 rounded-2xl border-primary text-primary hover:bg-primary hover:text-white">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
-          </Button>
-        </div>
+        <ButtonsControlReportes
+        selectedPeriod={selectedPeriod}
+        setSelectedPeriod={setSelectedPeriod}
+        />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

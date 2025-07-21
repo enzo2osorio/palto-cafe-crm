@@ -4,12 +4,12 @@ import "./index.css";
 import { Dashboard } from "./app/Dashboard/dashboard";
 import { NoDeberianEntrar } from "./app/no-deberian-entrar";
 import { DashboardLayout } from "./app/Layout/dashboard-layout";
-import { EmpleadosModule } from "./components/Dashboard/empleados-module";
+import { EmpleadosModule } from "./components/Dashboard/Empleados-module/empleados-module";
 import { ProductosModule } from "./components/Dashboard/Productos-module/productos-module";
-import { ProveedoresModule } from "./components/Dashboard/proveedores-module";
-import { ReportesModule } from "./components/Dashboard/reportes-module";
-import { CajaModule } from "./components/Dashboard/caja-module";
-import { ComprobantesModule } from "./components/Dashboard/comprobantes-module";
+import { ProveedoresModule } from "./components/Dashboard/Proveedores-module/proveedores-module";
+import { ReportesModule } from "./components/Dashboard/Reportes-module/reportes-module";
+import { CajaModule } from "./components/Dashboard/Caja-module/caja-module";
+import { ComprobantesModule } from "./components/Dashboard/Comprobantes-module/comprobantes-module";
 import { ThemeProvider } from "./components/ui/theme-provider";
 
 

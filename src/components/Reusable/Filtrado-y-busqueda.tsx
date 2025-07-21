@@ -1,16 +1,16 @@
 import { Input } from '@/components/ui/input'
-import { SelectCustom } from '@/components/ui/SelectCustom';
-import { categories } from '@/utils/productos-blank';
+import { SelectCustom, type Option } from '@/components/ui/SelectCustom';
 import { Search } from 'lucide-react'
 
 interface FiltroyBusquedaProps {
     searchTerm: string;
     setSearchTerm: (term: string) => void;
-    selectedCategory: string;
-    setSelectedCategory: (category: string) => void;
+    selectedOption: string;
+    setSelectedOption: (option: string) => void;
+    optionForSelect: Option[];
 }
 
-export const FiltroyBusqueda = ({ searchTerm, setSearchTerm, selectedCategory, setSelectedCategory }: FiltroyBusquedaProps) => {
+export const FiltroyBusqueda = ({ searchTerm, setSearchTerm, selectedOption, setSelectedOption, optionForSelect }: FiltroyBusquedaProps) => {
 
   return (
     <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
@@ -26,10 +26,9 @@ export const FiltroyBusqueda = ({ searchTerm, setSearchTerm, selectedCategory, s
           </div>
           
             <SelectCustom
-                className=" border-0 "
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                options={categories.map(category => ({ value: category.value, label: category.label }))}
+                value={selectedOption}
+                onChange={(e) => setSelectedOption(e.target.value)}
+                options={optionForSelect.map(option => ({ value: option.value, label: option.label }))}
             />
           
         </div>

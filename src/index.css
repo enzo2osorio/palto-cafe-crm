@@ -8,7 +8,8 @@
   --font-size: 14px;
 
   /* Colores inspirados en cafetería artesanal */
-  --background: oklch(1 0 0);
+  --background: #ffffff;
+--background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -296,11 +297,6 @@ html {
 .dark .nav-warm {
   background: linear-gradient(90deg, #2d2a25 0%, #1a1714 100%);
   backdrop-filter: blur(10px);
-}
-
-/* Animaciones para transiciones de modo oscuro */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 /* Dropdown shadow */

@@ -1,7 +1,7 @@
 
 export type EstadoEmpleado = 'activo' | 'inactivo' | 'licencia';
 export type TurnoEmpleado = 'Mañana' | 'Tarde' | 'Noche' | 'Completo';
-export type CargoEmpleado = 'todos' | 'Barista Principal' | 'Cocinero' | 'Cajera' | 'Ayudante de Cocina' | 'Supervisor' | 'Limpieza';
+export type CargoEmpleado = 'Todos los cargos' | 'Barista Principal' | 'Cocinero' | 'Cajera' | 'Ayudante de Cocina' | 'Supervisor' | 'Limpieza';
 
 export interface EmpleadosProps{
     id: number;

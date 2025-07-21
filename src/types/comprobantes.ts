@@ -2,7 +2,7 @@ export interface ComprobantesProps{
   id: number;
   numero: string;
   proveedor: string;
-  monto: number;
+  monto: string;
   fecha: string;
   categoria: string;
   tipo: string;

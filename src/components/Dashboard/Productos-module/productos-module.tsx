@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { products } from '@/utils/productos-blank';
+import { categories, products } from '@/utils/productos-blank';
 import { TopProductosMasVendidos } from './top-5-most-sold-products';
-import { FiltroyBusqueda } from './Filtrado-y-busqueda';
+import { FiltroyBusqueda } from '../../Reusable/Filtrado-y-busqueda';
 import { ListadoProductos } from './Lista-productos';
 import { ButtonCustom } from '@/components/ui/ButtonCustom';
+
+
 
 export function ProductosModule() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,8 +40,9 @@ export function ProductosModule() {
       <FiltroyBusqueda
       searchTerm={searchTerm}
       setSearchTerm={setSearchTerm}
-      selectedCategory={selectedCategory}
-      setSelectedCategory={setSelectedCategory}
+      selectedOption={selectedCategory}
+      setSelectedOption={setSelectedCategory}
+      optionForSelect={categories}
       />
       
       <ListadoProductos filteredProducts={filteredProducts} />

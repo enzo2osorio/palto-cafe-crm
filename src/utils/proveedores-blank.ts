@@ -13,7 +13,7 @@ export const proveedores : ProveedoresProps[] = [
       direccion: "Av. Los Andes 1234, Santiago",
       estado: "activo",
       ultimaCompra: "2025-07-15",
-      montoTotal: 2450000,
+      montoTotal: "2450000",
       observaciones: "Proveedor principal de café orgánico"
     },
     {
@@ -27,7 +27,7 @@ export const proveedores : ProveedoresProps[] = [
       direccion: "Calle Panaderos 567, Valparaíso",
       estado: "activo",
       ultimaCompra: "2025-07-16",
-      montoTotal: 890000,
+      montoTotal: "890000",
       observaciones: "Entrega diaria de pan fresco"
     },
     {
@@ -41,7 +41,7 @@ export const proveedores : ProveedoresProps[] = [
       direccion: "Ruta 5 Sur Km 890, Temuco",
       estado: "activo",
       ultimaCompra: "2025-07-14",
-      montoTotal: 567000,
+      montoTotal: "567000",
       observaciones: "Productos orgánicos certificados"
     },
     {
@@ -55,7 +55,7 @@ export const proveedores : ProveedoresProps[] = [
       direccion: "Mercado Central Local 45, Santiago",
       estado: "inactivo",
       ultimaCompra: "2025-06-28",
-      montoTotal: 234000,
+      montoTotal: "234000",
       observaciones: "Proveedor estacional"
     },
     {
@@ -69,9 +69,9 @@ export const proveedores : ProveedoresProps[] = [
       direccion: "Industrial Norte 2890, Quilicura",
       estado: "activo",
       ultimaCompra: "2025-07-17",
-      montoTotal: 1200000,
+      montoTotal: "1200000",
       observaciones: "Equipos y suministros para cafetería"
     }
   ];
 
-  export const rubros = ['todos', 'Café y granos', 'Panadería', 'Lácteos', 'Frutas y verduras', 'Suministros', 'Otros'];
+  export const rubros = ['Todos', 'Café y granos', 'Panadería', 'Lácteos', 'Frutas y verduras', 'Suministros', 'Otros'];

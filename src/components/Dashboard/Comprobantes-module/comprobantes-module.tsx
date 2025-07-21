@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Upload, Search, Filter, Eye, Download, Trash2, FileText, Calendar, DollarSign, Building, Zap, CheckCircle } from 'lucide-react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Upload, Search, Filter, Eye, Download, Trash2, FileText, Building, Zap, CheckCircle } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { comprobantes, proveedores } from '@/utils/comprobantes-blank';
 import { formatCurrency } from '@/lib/formatCurrency';
+import { KPISCardsForComprobantes } from './kpis-cards';
 
 export function ComprobantesModule() {
   const [activeTab, setActiveTab] = useState('lista');
@@ -45,7 +46,7 @@ export function ComprobantesModule() {
 
   const totalComprobantes = comprobantes.length;
   const comprobantesHoy = comprobantes.filter(c => new Date(c.fecha).getMilliseconds() === Date.now()).length;
-  const montoTotal = comprobantes.reduce((sum, c) => sum + c.monto, 0);
+  const montoTotal = comprobantes.reduce((sum, c) => sum + parseFloat(c.monto), 0);
   const procesadosIA = comprobantes.filter(c => c.procesadoIA).length;
 
   return (
@@ -59,63 +60,12 @@ export function ComprobantesModule() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="card-warm p-6 border-0">
-          <div className="flex items-center justify-between mb-4">
-            <FileText className="w-8 h-8 text-primary" />
-            <Badge className="bg-primary/10 text-primary border-primary/20">
-              Total
-            </Badge>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-display text-3xl text-foreground">{totalComprobantes}</h3>
-            <p className="font-ui font-semibold text-foreground">Total Comprobantes</p>
-            <p className="font-ui text-sm text-muted-foreground">En el sistema</p>
-          </div>
-        </Card>
-
-        <Card className="card-warm p-6 border-0">
-          <div className="flex items-center justify-between mb-4">
-            <Calendar className="w-8 h-8 text-success" />
-            <Badge className="bg-success/10 text-success border-success/20">
-              Hoy
-            </Badge>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-display text-3xl text-foreground">{comprobantesHoy}</h3>
-            <p className="font-ui font-semibold text-foreground">Subidos Hoy</p>
-            <p className="font-ui text-sm text-muted-foreground">Nuevos documentos</p>
-          </div>
-        </Card>
-
-        <Card className="card-warm p-6 border-0">
-          <div className="flex items-center justify-between mb-4">
-            <DollarSign className="w-8 h-8 text-accent" />
-            <Badge className="bg-accent/10 text-accent border-accent/20">
-              Total
-            </Badge>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-display text-3xl text-foreground">{formatCurrency(montoTotal)}</h3>
-            <p className="font-ui font-semibold text-foreground">Monto Total</p>
-            <p className="font-ui text-sm text-muted-foreground">Documentados</p>
-          </div>
-        </Card>
-
-        <Card className="card-warm p-6 border-0">
-          <div className="flex items-center justify-between mb-4">
-            <Zap className="w-8 h-8 text-warning" />
-            <Badge className="bg-warning/10 text-warning border-warning/20">
-              IA
-            </Badge>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-display text-3xl text-foreground">{procesadosIA}</h3>
-            <p className="font-ui font-semibold text-foreground">Procesados con IA</p>
-            <p className="font-ui text-sm text-muted-foreground">Automatizados</p>
-          </div>
-        </Card>
-      </div>
+      <KPISCardsForComprobantes
+        totalComprobantes={totalComprobantes}
+        totalHoy={comprobantesHoy}
+        montoTotal={montoTotal}
+        procesadosConIA={procesadosIA}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-muted rounded-2xl p-1">

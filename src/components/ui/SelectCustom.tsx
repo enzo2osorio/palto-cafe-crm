@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 type SelectCustomProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   className?: string;
-  children?: React.ReactNode;
   options?: { value: string; label: string }[];
 };
 
@@ -13,7 +12,6 @@ export interface Option {
 
 export const SelectCustom = ({
   className,
-  children,
   options,
   ...props
 }: SelectCustomProps) => {
@@ -25,14 +23,14 @@ export const SelectCustom = ({
     <div className="relative w-max h-max">
       <select
         onClick={() => handleSelectClick()}
-        className={`bg-accent px-5 py-3 pr-12 rounded-2xl ${className}`}
+        className={`bg-accent px-5 py-3 outline-2 transition-colors cursor-pointer focus:outline-white pr-12 rounded-2xl text-base font-body ${className}`}
         {...props}
       >
         {options?.map((option) => (
           <option
             key={option.value}
             value={option.value}
-            className="text-muted-foreground font-ui w-full"
+            className="text-muted-foreground font-body w-full border-none"
           >
             {option.label}
           </option>

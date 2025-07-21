@@ -84,5 +84,5 @@ export const empleados : EmpleadosProps[] = [
   ];
 
 
-export const cargos : CargoEmpleado[] = ['todos', 'Barista Principal', 'Cocinero', 'Cajera', 'Ayudante de Cocina', 'Supervisor', 'Limpieza'];
+export const cargos : CargoEmpleado[] = ['Todos los cargos', 'Barista Principal', 'Cocinero', 'Cajera', 'Ayudante de Cocina', 'Supervisor', 'Limpieza'];
 export const turnos : TurnoEmpleado[] = ['Mañana', 'Tarde', 'Noche', 'Completo'];

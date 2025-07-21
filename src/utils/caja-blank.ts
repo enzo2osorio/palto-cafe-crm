@@ -72,3 +72,5 @@ export const datosSemanales : DatosSemanalesProps[] = [
   ];
 
   export const metodosPago : MetodosPago[] = ['Efectivo', 'Tarjeta', 'Transferencia', 'QR/Digital'];
+
+  
