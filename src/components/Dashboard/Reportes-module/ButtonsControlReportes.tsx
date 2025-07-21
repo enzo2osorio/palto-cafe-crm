@@ -1,13 +1,15 @@
 import { ButtonCustom, ButtonCustomSecondary } from "@/components/ui/ButtonCustom";
 import { SelectCustom, type Option } from "@/components/ui/SelectCustom"
 import { Download, RefreshCw } from "lucide-react";
-
+import { useNavigate } from "react-router";
 interface ButtonsControlReportesProps{
     selectedPeriod: string;
     setSelectedPeriod: (period: string) => void;
 }
 
 export const ButtonsControlReportes = ({selectedPeriod,setSelectedPeriod} : ButtonsControlReportesProps) => {
+
+  const navigate = useNavigate()
 
     const optionsForReportes : Option[] = [
         {
@@ -38,7 +40,11 @@ export const ButtonsControlReportes = ({selectedPeriod,setSelectedPeriod} : Butt
           >
           </SelectCustom>
           
-          <ButtonCustom className="group/refresh" >
+          <ButtonCustom 
+          onClick={() => {
+            navigate(0)
+          }}
+          className="group/refresh" >
             <RefreshCw className="w-4 h-4 mr-2 group-hover/refresh:rotate-45 transition-all" />
             Actualizar
           </ButtonCustom>

@@ -31,7 +31,6 @@ export function Navbar() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();  
   useEffect(() => {
-    // Actualizar el módulo activo según la ruta actual
     const path = location.pathname.split('/')[2];
     console.log({path})
     if (path) {
