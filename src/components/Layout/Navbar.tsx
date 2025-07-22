@@ -16,6 +16,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { useTheme } from '../ui/theme-provider';
+import { signOut } from '@/lib/auth/signOut';
 
 
 export function Navbar() {
@@ -32,7 +33,6 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();  
   useEffect(() => {
     const path = location.pathname.split('/')[2];
-    console.log({path})
     if (path) {
       setActiveModule(path);
     } else {
@@ -89,7 +89,7 @@ export function Navbar() {
       navigate(`/dashboard/${itemId}`);
   };
 
-  const handleProfileClick = (itemId: string) => {
+  const handleProfileClick = async(itemId: string) => {
     if (itemId === 'modo-oscuro') {
       setTheme(theme === 'dark' ? 'light' : 'dark');
       
@@ -99,7 +99,8 @@ export function Navbar() {
       console.log('FALTA configuración...');
     //   onModuleChange('configuracion');
     } else if (itemId === 'cerrar-sesion') {
-      console.log('FALTA cerrar sesión...');
+      await signOut()
+      navigate("/login")
     }
     setShowProfileDropdown(false);
   };

@@ -1,11 +1,7 @@
 import { useState } from 'react';
-import { TrendingUp } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ventasPorDia, ventasPorCategoria,metricsComparativas, topProductos } from '@/utils/reportes-blank';
 
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ventasPorDia, ventasPorCategoria, gastosPorCategoria,metricsComparativas, topProductos } from '@/utils/reportes-blank';
-import { formatCurrency } from '@/lib/formatCurrency';
 import { ButtonsControlReportes } from './ButtonsControlReportes';
 import { DashboardGeneral } from './Dashboard-general/Dashboard-general';
 import { AnalisisVentas } from './Analisis-ventas/Analisis-ventas';

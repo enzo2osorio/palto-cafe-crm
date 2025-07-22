@@ -10,6 +10,7 @@
   ],
   "compilerOptions": {
     "baseUrl": ".",
+    "erasableSyntaxOnly": true,
     "paths": {
       "@/*": ["./src/*"]
     }
