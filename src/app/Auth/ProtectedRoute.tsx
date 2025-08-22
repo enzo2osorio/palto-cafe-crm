@@ -3,7 +3,6 @@ import { Loader2, Coffee } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import supabase from '@/lib/supabaseClient';
 import type { User } from '@supabase/supabase-js';
-
 interface ProtectedRouteProps {
   children: ReactNode;
 }
@@ -15,14 +14,15 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const navigate = useNavigate()
 
   // Mostrar loading mientras se verifica la autenticación
-
   useEffect(() =>{
     const fetchUser = async() => {
       const user = await supabase.auth.getUser();
       setUser(user.data.user);
       setLoading(false);
+      console.log({user})
     }
-    fetchUser();
+    fetchUser()
+
    }, [])
 
   useEffect(() => {

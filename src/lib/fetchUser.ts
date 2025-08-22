@@ -33,16 +33,6 @@ export const fetchingAuthUser = async({ setUser, setLoading }: FetchUserProps) =
   }
 }
 
-// export const fetchingPublicUser = async (userId: string, setUser: (user: User | null) => void, setLoading: (loading: boolean) => void) => {
-//     setLoading(true);
-//     const { data, error } = await supabase.auth.api.getUserById(userId);
-//     if (error) {
-//         setUser(null);
-//     } else {
-//         setUser(data);
-//     }
-//     setLoading(false);
-// };
 
 export const fetchUser = async (userId: string) => {
     if (!userId) {

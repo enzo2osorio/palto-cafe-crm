@@ -14,6 +14,7 @@ import { LoginPage } from "./app/Auth/Login";
 // import { RegisterPage } from "./app/Auth/Register";
 import { NotFound } from "./app/NotFound";
 import { ProtectedRoute } from "./app/Auth/ProtectedRoute";
+import { RegisterPage } from "./app/Auth/Register";
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -27,10 +28,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Route path="login" element={
         <LoginPage />
     } />
-    {/* <Route path="register" element={<RegisterPage />} /> */}
-    {/* <Route element={<AuthLayout />}>
+    <Route path="register" element={<RegisterPage />} />
+     {/* <Route element={<AuthLayout />}>
       <Route path="register" element={<Register />} />
-    </Route> */}
+    </Route>  */}
 
     <Route path="dashboard" element={
         <ProtectedRoute>
