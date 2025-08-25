@@ -11,6 +11,7 @@ import { DollarSign } from 'lucide-react';
 import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
 import { getMonthlyVentasToOwners } from '@/utils/registros/registrosMensuales/getMonthlyIngresosToOwners';
 import { GraficoIngresosMensuales } from './Grafico-ingresos-mensuales';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 export interface GraphicProps{
   owner : string;
@@ -42,9 +43,9 @@ export function InicioModule() {
         const kpiPropsOwners : KPISProps[] = [
           {
             title: `Ingresos de ${owner}`,
-            value: todayIngresos.toString(),
+            value: formatCurrency(todayIngresos.toString()),
             change: yesterdayOwner.ingresos > 0 
-              ? `Los egresos de ayer fueron: ${yesterdayOwner.ingresos.toString()}`
+              ? `Los egresos de ayer fueron: ${formatCurrency(yesterdayOwner.ingresos.toString())}`
               : "No se registraron ingresos hoy",
             changeMin: yesterdayOwner.ingresos && yesterdayOwner.ingresos > 0
             ? `${(((todayIngresos - yesterdayOwner.ingresos) / yesterdayOwner.ingresos) * 100).toFixed(2)}%`
@@ -56,9 +57,9 @@ export function InicioModule() {
           },
           {
             title: `Egresos de ${owner}`,
-            value: todayEgresos.toString(),
+            value: formatCurrency(todayEgresos.toString()),
             change: yesterdayOwner.egresos > 0 
-              ? `Los egresos de ayer fueron: ${yesterdayOwner.egresos.toString()} `
+              ? `Los egresos de ayer fueron: ${formatCurrency(yesterdayOwner.egresos.toString())}`
               : "No se registraron egresos hoy",
             changeMin: yesterdayOwner.egresos && yesterdayOwner.egresos > 0
             ? `${(((todayEgresos - yesterdayOwner.egresos) / yesterdayOwner.egresos) * 100).toFixed(2)}%`
