@@ -26,9 +26,9 @@ export const SelectCustom = ({
         className={`bg-accent px-5 py-3 outline-2 transition-colors cursor-pointer focus:outline-white pr-12 rounded-2xl text-base font-body ${className}`}
         {...props}
       >
-        {options?.map((option) => (
+        {options?.map((option,id) => (
           <option
-            key={option.value}
+            key={option.value + id}
             value={option.value}
             className="text-muted-foreground font-body w-full border-none"
           >

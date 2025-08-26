@@ -57,15 +57,16 @@ export function EmpleadosModule() {
 
       {/* Filtros y búsqueda */}
       {!showAgregarForm && !showAsistencia && (
-        <FiltroyBusqueda
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedOption={selectedCargo}
-          setSelectedOption={setSelectedCargo}
-          optionForSelect={[
-            ...cargos.map(cargo => ({ value: cargo, label: cargo }))
-          ]}
-        />
+       <></>
+       // <FiltroyBusqueda
+        //   searchTerm={searchTerm}
+        //   setSearchTerm={setSearchTerm}
+        //   selectedOption={selectedCargo}
+        //   setSelectedOption={setSelectedCargo}
+        //   optionForSelect={[
+        //     ...cargos.map(cargo => ({ value: cargo, label: cargo }))
+        //   ]}
+        // />
         
       )}
 

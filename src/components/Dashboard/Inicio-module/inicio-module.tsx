@@ -113,7 +113,7 @@ export function InicioModule() {
       {/* KPI Cards */}
       {
         kpisLoading ? (
-          <KPISCardsSkeleton/>
+          <KPISCardsSkeleton amountCards={6}/>
         ) : (
           <KPISCardsForInicio
           kpiData={kpiData}

@@ -1,4 +1,3 @@
-import { proveedores, rubros } from '@/utils/proveedores-blank';
 import { KPISProveedores } from './Kpis-cards';
 import { ContainerListadoProveedores } from './Container-listado-proveedores';
 import { ButtonCustom } from '@/components/ui/ButtonCustom';
@@ -7,14 +6,20 @@ import { useEffect, useState } from 'react';
 import { AgregarProveedor } from './Agregar-proveedor';
 import { getMontlyCostOfSuppliers } from '@/utils/registros/registrosMensuales/getMonthlyCostsOfSuppliers';
 import type { CustomCardProps } from '@/components/Reusable/CustomCard';
-import { getCountProveedores } from '@/utils/registros/proveedores/getAllProveedores';
+import { getCountProveedores, getProveedoresWithAliasesAndSubcategorias, type PaginationProveedores } from '@/utils/registros/proveedores/getAllProveedores';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { getTopProveedor } from '@/utils/registros/proveedores/getTopProveedor';
+import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
+import { getAllSubcategoriasOfProovedores } from '@/utils/registros/subcategorias/getAllSubcategoriasOfProovedores';
+import { useProveedorStore } from '@/lib/store/proovedorStore';
+
 
 export function ProveedoresModule() {
 
   const [agregarProveedor, setAgregarProveedor] = useState(false);
   const [monthlyCostsForProveedores, setMonthlyCostsForProveedores] = useState<CustomCardProps[]>([]);
+  const [isLoadingCosts, setIsLoadingCosts] = useState(true);
+  const { setProveedores, setSubcategorias, proveedores, subcategorias, setLoading, pagination } = useProveedorStore();
 
   const handleAgregarProveedor = () => {
     setAgregarProveedor(!agregarProveedor);
@@ -34,7 +39,7 @@ export function ProveedoresModule() {
 
       const customCardFormat: CustomCardProps = {
         LeftTop: Plus,
-        titleForBadge: 'Es una banda',
+        titleForBadge: 'Amigo es una banda',
         titleForCard: `${totalEnPesos}`,
         subtitleForCard: `Compras totales de este mes`,
         miniDescriptionForCard: 'Monto total de compras realizadas'
@@ -43,12 +48,12 @@ export function ProveedoresModule() {
     };
 
     const fetchAllSuppliers = async (): Promise<CustomCardProps | null> => {
-      const allSuppliers = await getCountProveedores();
-      if (!allSuppliers) {
-        console.error('No se encontraron proveedores');
+      const allSuppliersCount = await getCountProveedores(); // devuelve number
+      if (typeof allSuppliersCount !== 'number') {
+        console.error('No se pudieron contar los proveedores');
         return null;
       }
-      const count = allSuppliers.length;
+      const count = allSuppliersCount;
 
       const customCardFormat: CustomCardProps = {
         LeftTop: User,
@@ -79,11 +84,21 @@ export function ProveedoresModule() {
       return customCardFormat;
     }
 
+    const initProveedoresAliases = async (pagination : PaginationProveedores) => {
+      const proveedoresAliases = await getProveedoresWithAliasesAndSubcategorias(pagination);
+      if (!proveedoresAliases) {
+        console.error('No se encontraron proveedores con alias');
+        return null;
+      }
+      return proveedoresAliases
+    }
+
     const initAllKPIs = async () => {
+      setIsLoadingCosts(true);
       const [monthlyCosts, allSuppliers, topProveedor] = await Promise.all([
         fetchMonthlyCosts(),
         fetchAllSuppliers(),
-        fetchTopProveedor()
+        fetchTopProveedor(),
       ]);
 
       const cards: CustomCardProps[] = [];
@@ -91,13 +106,43 @@ export function ProveedoresModule() {
       if (allSuppliers) cards.push(allSuppliers);
       if (topProveedor) cards.push(topProveedor);
       setMonthlyCostsForProveedores(cards);
+      setIsLoadingCosts(false);
     };
 
-    // Ejecutar
+    const initListadoProveedores = async () => {
+      setLoading(true);
+      const [proovedores , subcategorias] = await Promise.all([
+        initProveedoresAliases({page:0, limit:10}),
+        getAllSubcategoriasOfProovedores()
+      ]);
+
+      if (subcategorias) {
+        const subcats = subcategorias.map((subcat) => subcat.name);
+        setSubcategorias(['Todos', ...subcats]);
+      }
+      if (proovedores) setProveedores(proovedores);
+      setLoading(false);
+    };
+
     initAllKPIs();
+    initListadoProveedores();
 
   }, [])
 
+  useEffect(() => {
+    const updatingProveedores = async () => {
+      setLoading(true);
+      const proveedores = await getProveedoresWithAliasesAndSubcategorias(pagination);
+      if (!proveedores) {
+        console.error('No se encontraron proveedores');
+        return null;
+      }
+      setProveedores(proveedores);
+      setLoading(false);
+    }
+    updatingProveedores();
+
+  }, [pagination])
 
 
   return (
@@ -122,16 +167,15 @@ export function ProveedoresModule() {
      {
       !agregarProveedor ? (
         <>
+       {isLoadingCosts ? <KPISCardsSkeleton/> : (
          <KPISProveedores proveedores={monthlyCostsForProveedores} />
+       )}
 
-      <ContainerListadoProveedores
-      proveedores={proveedores}
-      rubros={rubros}
-      />
+      <ContainerListadoProveedores/>
         </>
       ) : (
         <AgregarProveedor
-        rubros={rubros}
+        rubros={subcategorias}
         />
       )
      }
