@@ -6,12 +6,13 @@ import { useEffect, useState } from 'react';
 import { AgregarProveedor } from './Agregar-proveedor';
 import { getMontlyCostOfSuppliers } from '@/utils/registros/registrosMensuales/getMonthlyCostsOfSuppliers';
 import type { CustomCardProps } from '@/components/Reusable/CustomCard';
-import { getCountProveedores, getProveedoresWithAliasesAndSubcategorias, type PaginationProveedores } from '@/utils/registros/proveedores/getAllProveedores';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { getTopProveedor } from '@/utils/registros/proveedores/getTopProveedor';
 import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
-import { getAllSubcategoriasOfProovedores } from '@/utils/registros/subcategorias/getAllSubcategoriasOfProovedores';
-import { useProveedorStore } from '@/lib/store/proovedorStore';
+import { getAllSubcategoriasOfDestinatarios } from '@/utils/registros/subcategorias/getAllSubcategoriasOfDestinatarios';
+import { useDestinatarioStore } from '@/lib/store/destinatariosStore';
+import { getCountDestinatariosByCategoryId, getDestinatariosWithAliasesAndSubcategoriasByCategoryId } from '@/utils/registros/destinatarios-GLOBAL/getDestinatarios';
+import type { PaginationForDestinatarios } from '@/types/pagination';
 
 
 export function ProveedoresModule() {
@@ -19,7 +20,7 @@ export function ProveedoresModule() {
   const [agregarProveedor, setAgregarProveedor] = useState(false);
   const [monthlyCostsForProveedores, setMonthlyCostsForProveedores] = useState<CustomCardProps[]>([]);
   const [isLoadingCosts, setIsLoadingCosts] = useState(true);
-  const { setProveedores, setSubcategorias, proveedores, subcategorias, setLoading, pagination } = useProveedorStore();
+  const { setDestinatarios, setSubcategorias, subcategorias,searchTerm, selectedRubro, setLoading, pagination } = useDestinatarioStore();
 
   const handleAgregarProveedor = () => {
     setAgregarProveedor(!agregarProveedor);
@@ -37,9 +38,11 @@ export function ProveedoresModule() {
       const totalMonto = costs.reduce((acc: number, cost: { monto: number }) => acc + (Number(cost.monto) || 0), 0);
       const totalEnPesos = formatCurrency(totalMonto.toString())
 
+      const titleBadge = totalMonto > 9000000 ? 'Alerta de bancarrota' : totalMonto > 1000000 ? 'Amigo es una banda' : totalMonto > 500000 ? 'Considera Ahorrar' : "Sin mucho gasto";
+
       const customCardFormat: CustomCardProps = {
         LeftTop: Plus,
-        titleForBadge: 'Amigo es una banda',
+        titleForBadge: `${titleBadge}`,
         titleForCard: `${totalEnPesos}`,
         subtitleForCard: `Compras totales de este mes`,
         miniDescriptionForCard: 'Monto total de compras realizadas'
@@ -48,7 +51,7 @@ export function ProveedoresModule() {
     };
 
     const fetchAllSuppliers = async (): Promise<CustomCardProps | null> => {
-      const allSuppliersCount = await getCountProveedores(); // devuelve number
+      const allSuppliersCount = await getCountDestinatariosByCategoryId('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c') // devuelve number
       if (typeof allSuppliersCount !== 'number') {
         console.error('No se pudieron contar los proveedores');
         return null;
@@ -84,8 +87,8 @@ export function ProveedoresModule() {
       return customCardFormat;
     }
 
-    const initProveedoresAliases = async (pagination : PaginationProveedores) => {
-      const proveedoresAliases = await getProveedoresWithAliasesAndSubcategorias(pagination);
+    const initProveedoresAliases = async (pagination : PaginationForDestinatarios) => {
+      const proveedoresAliases = await getDestinatariosWithAliasesAndSubcategoriasByCategoryId('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c', pagination, searchTerm, selectedRubro);
       if (!proveedoresAliases) {
         console.error('No se encontraron proveedores con alias');
         return null;
@@ -113,14 +116,14 @@ export function ProveedoresModule() {
       setLoading(true);
       const [proovedores , subcategorias] = await Promise.all([
         initProveedoresAliases({page:0, limit:10}),
-        getAllSubcategoriasOfProovedores()
+        getAllSubcategoriasOfDestinatarios('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c')
       ]);
 
       if (subcategorias) {
-        const subcats = subcategorias.map((subcat) => subcat.name);
+        const subcats = subcategorias.map((subcat : { name: string }) => subcat.name);
         setSubcategorias(['Todos', ...subcats]);
       }
-      if (proovedores) setProveedores(proovedores);
+      if (proovedores) setDestinatarios(proovedores);
       setLoading(false);
     };
 
@@ -132,17 +135,21 @@ export function ProveedoresModule() {
   useEffect(() => {
     const updatingProveedores = async () => {
       setLoading(true);
-      const proveedores = await getProveedoresWithAliasesAndSubcategorias(pagination);
+      const proveedores = await getDestinatariosWithAliasesAndSubcategoriasByCategoryId('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c', pagination, searchTerm, selectedRubro);
       if (!proveedores) {
         console.error('No se encontraron proveedores');
         return null;
       }
-      setProveedores(proveedores);
+      setDestinatarios(proveedores);
       setLoading(false);
     }
     updatingProveedores();
 
-  }, [pagination])
+    return () => {
+      setDestinatarios([]);
+    }
+
+  }, [pagination, searchTerm, selectedRubro])
 
 
   return (

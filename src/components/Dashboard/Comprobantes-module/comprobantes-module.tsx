@@ -1,13 +1,16 @@
-import { useState } from 'react';
-import { Upload, Search, Filter, Eye, Download, Trash2, FileText, Building, Zap, CheckCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Upload, Search, Filter, FileText, Building, Zap, CheckCircle, Calendar, DollarSign } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { comprobantes, proveedores } from '@/utils/comprobantes-blank';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { KPISCardsForComprobantes } from './kpis-cards';
+import { getRegistrosOfToday, getRegistrosOfYesterday, getRegistrosWithDestinatariosAndMetodoPagoAndCuentaContable, type LastRegistrosProps } from '@/utils/registros/getRegistros';
+import type { CustomCardProps } from '@/components/Reusable/CustomCard';
+import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
+import { TablaComprobantesSkeleton } from '../Skeletons/TablaComprobantesSkeleton';
 
 export function ComprobantesModule() {
   const [activeTab, setActiveTab] = useState('lista');
@@ -15,16 +18,77 @@ export function ComprobantesModule() {
   const [selectedProveedor, setSelectedProveedor] = useState('todos');
   const [uploading, setUploading] = useState(false);
   const [aiProcessing, setAiProcessing] = useState(false);
+  const [kpisLoading, setKpisLoading] = useState(true);
+  const [kpiFormat, setKpiFormat] = useState<CustomCardProps[]>([]);
+  const [last6Movements, setLast6Movements] = useState<LastRegistrosProps[]>([]);
+  const [loading6Movements, setLoading6Movements] = useState(true);
 
-  
+  useEffect(() => {
 
-  const filteredComprobantes = comprobantes.filter(comprobante => {
-    const matchesSearch = comprobante.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         comprobante.proveedor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         comprobante.categoria.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesProveedor = selectedProveedor === 'todos' || comprobante.proveedor === selectedProveedor;
-    return matchesSearch && matchesProveedor;
-  });
+    const fetchRegistrosOfToday = async () => {
+      setKpisLoading(true);
+      const [registrosToday, registrosYesterday] = await Promise.all([
+        getRegistrosOfToday(),
+        getRegistrosOfYesterday()
+      ]);
+
+      const montoDiario = registrosToday.reduce((sum, r) => sum + r.monto, 0);
+      const montoYesterday = registrosYesterday.reduce((sum, r) => sum + r.monto, 0);
+      const fromBot = registrosToday.filter(r => r.origen === 'bot').map(r => r.monto).length;
+      const fromFudo = registrosToday.filter(r => r.origen === 'fudo').map(r => r.monto).length;
+
+      const kpiFormat : CustomCardProps[] = [
+        {
+        LeftTop : DollarSign,
+        titleForBadge: 'Total',
+        titleForCard: `${formatCurrency(montoDiario.toString())}`,
+        subtitleForCard: `El monto de ayer fue ${formatCurrency(montoYesterday.toString())}`,
+        miniDescriptionForCard: 'Documentados',
+        },
+        {
+        LeftTop : Calendar,
+        titleForBadge: 'Hoy',
+        titleForCard: `${registrosToday.length}`,
+        subtitleForCard: 'Subidos Hoy',
+        miniDescriptionForCard: 'Nuevos documentos',
+      },
+        {
+        LeftTop : FileText,
+        titleForBadge: 'Desde el bot',
+        titleForCard: `${fromBot}`, // Example total, replace with actual prop if needed
+        subtitleForCard: 'Total Comprobantes desde el bot',
+        miniDescriptionForCard: 'En el sistema',
+      },
+      {
+        LeftTop : FileText,
+        titleForBadge: 'Desde el fudo',
+        titleForCard: `${fromFudo}`, // Example total, replace with actual prop if needed
+        subtitleForCard: 'Total Comprobantes desde el fudo',
+        miniDescriptionForCard: 'En el sistema',
+      },
+      
+      ]
+
+      setKpiFormat(kpiFormat)
+      setKpisLoading(false);
+    }
+
+    const fetchRegistrosHistoricos = async () => {
+      setLoading6Movements(true);
+      const last6Registros = await getRegistrosWithDestinatariosAndMetodoPagoAndCuentaContable(6);
+
+      if(!last6Registros){
+        console.warn('No se encontraron movimientos');
+        return []
+      }
+      setLast6Movements(last6Registros);
+      setLoading6Movements(false);
+    }
+
+    fetchRegistrosOfToday();
+    fetchRegistrosHistoricos();
+
+  }, [])
 
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,11 +108,6 @@ export function ComprobantesModule() {
     }
   };
 
-  const totalComprobantes = comprobantes.length;
-  const comprobantesHoy = comprobantes.filter(c => new Date(c.fecha).getMilliseconds() === Date.now()).length;
-  const montoTotal = comprobantes.reduce((sum, c) => sum + parseFloat(c.monto), 0);
-  const procesadosIA = comprobantes.filter(c => c.procesadoIA).length;
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -60,12 +119,15 @@ export function ComprobantesModule() {
       </div>
 
       {/* KPI Cards */}
-      <KPISCardsForComprobantes
-        totalComprobantes={totalComprobantes}
-        totalHoy={comprobantesHoy}
-        montoTotal={montoTotal}
-        procesadosConIA={procesadosIA}
+     {
+        kpisLoading ? (
+          <KPISCardsSkeleton amountCards={4}/>
+        ):(
+           <KPISCardsForComprobantes
+        kpis={kpiFormat}
       />
+        )
+     }
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-muted rounded-2xl p-1">
@@ -115,91 +177,59 @@ export function ComprobantesModule() {
           </div>
 
           {/* Tabla de comprobantes */}
-          <Card className="card-warm border-0 overflow-hidden">
+          {last6Movements.length === 0 || loading6Movements ? (
+            <TablaComprobantesSkeleton/>
+          ) : (
+            <Card className="card-warm border-0 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Comprobante</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Proveedor</th>
+                    <th className="text-left p-4 font-ui font-semibold text-foreground">Destinatario</th>
+                    <th className="text-left p-4 font-ui font-semibold text-foreground">Categoría</th>
+                    <th className="text-left p-4 font-ui font-semibold text-foreground">Subcategoría</th>
                     <th className="text-left p-4 font-ui font-semibold text-foreground">Monto</th>
                     <th className="text-left p-4 font-ui font-semibold text-foreground">Fecha</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Categoría</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Estado</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Acciones</th>
+                    <th className="text-left p-4 font-ui font-semibold text-foreground">Cuenta contable</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredComprobantes.map((comprobante) => (
+                  {last6Movements.map((comprobante) => (
                     <tr key={comprobante.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                      <td className="p-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <FileText className="w-4 h-4 text-primary" />
-                            <p className="font-ui font-medium text-foreground">{comprobante.numero}</p>
-                          </div>
-                          <p className="font-ui text-sm text-muted-foreground">{comprobante.tipo}</p>
-                          {comprobante.procesadoIA && (
-                            <div className="flex items-center space-x-1">
-                              <Zap className="w-3 h-3 text-warning" />
-                              <span className="font-ui text-xs text-warning">Procesado IA</span>
-                            </div>
-                          )}
-                        </div>
-                      </td>
                       <td className="p-4">
                         <div className="flex items-center space-x-2">
                           <Building className="w-4 h-4 text-muted-foreground" />
-                          <p className="font-ui text-foreground">{comprobante.proveedor}</p>
+                          <p className="font-ui text-foreground">{comprobante.destinatario}</p>
                         </div>
                       </td>
                       <td className="p-4">
-                        <p className="font-ui font-semibold text-foreground">{formatCurrency(comprobante.monto)}</p>
-                      </td>
-                      <td className="p-4">
-                        <p className="font-ui text-foreground">{comprobante.fecha}</p>
-                        <p className="font-ui text-sm text-muted-foreground">Subido: {comprobante.fechaSubida}</p>
-                      </td>
-                      <td className="p-4">
-                        <Badge className="bg-primary/10 text-primary border-primary/20 font-ui">
+                        <Badge className="bg-primary/30 text-primary text-base border-primary/20 font-ui">
                           {comprobante.categoria}
                         </Badge>
                       </td>
                       <td className="p-4">
-                        <Badge className={`${
-                          comprobante.estado === 'procesado' 
-                            ? 'bg-success/10 text-success border-success/20'
-                            : 'bg-warning/10 text-warning border-warning/20'
-                        } font-ui`}>
-                          {comprobante.estado === 'procesado' ? (
-                            <>
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Procesado
-                            </>
-                          ) : (
-                            'Pendiente'
-                          )}
-                        </Badge>
+                        <p className="bg-primary/10 text-primary text-base lg:max-w-[80%] border-primary/20 font-ui p-1 px-2 rounded-lg text-center">
+                          {comprobante.subcategoria}
+                        </p>
                       </td>
                       <td className="p-4">
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="ghost" className="w-8 h-8 p-0" title="Ver documento">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="w-8 h-8 p-0" title="Descargar">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="w-8 h-8 p-0 text-destructive" title="Eliminar">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                        <p className="font-ui font-semibold text-foreground">{formatCurrency(comprobante.monto.toString())}</p>
                       </td>
+                      <td className="p-4">
+                        <p className="font-ui text-foreground">{new Date(comprobante.fecha).toLocaleDateString()}</p>
+                        <p className="font-ui text-sm text-muted-foreground">Subido: {new Date(comprobante.created_at).toLocaleDateString()}</p>
+                      </td>
+                      <td className="p-4">
+                        <p className="font-ui font-semibold text-foreground lg:max-w-[80%] text-pretty">{comprobante.cuentaContable}</p>
+                      </td>
+                      
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="subir" className="space-y-6">

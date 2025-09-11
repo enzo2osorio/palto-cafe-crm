@@ -1,5 +1,5 @@
 import supabase from "@/lib/supabaseClient"
-import { getLastMonth } from "../registrosMensuales/getLastMonth"
+import { getLastMonth } from "../../date/getLastMonth"
 
 interface Proveedores{
     id: string

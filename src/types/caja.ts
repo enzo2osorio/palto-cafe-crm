@@ -1,13 +1,12 @@
 
 export interface TransaccionesProps {
     id: number;
-    tipo: 'ingreso' | 'egreso';
+    tipo_movimiento: 'ingreso' | 'egreso';
     monto: number;
-    categoria: string;
+    subcategoria: string;
     fecha: string;
-    metodoPago: 'Efectivo' | 'Tarjeta' | 'Transferencia';
-    descripcion: string;
-    comprobante: boolean;
+    metodo_pago: string;
+    cuenta_contable_description: string;
 }
 
 export interface CategoriasProps {

@@ -60,16 +60,6 @@ export const transacciones : TransaccionesProps[] = [
 
 
 
-// Datos para el gráfico semanal
-export const datosSemanales : DatosSemanalesProps[] = [
-    { dia: 'Lun', ingresos: 120000, egresos: 45000 },
-    { dia: 'Mar', ingresos: 145000, egresos: 85000 },
-    { dia: 'Mié', ingresos: 89000, egresos: 25000 },
-    { dia: 'Jue', ingresos: 167000, egresos: 95000 },
-    { dia: 'Vie', ingresos: 198000, egresos: 55000 },
-    { dia: 'Sáb', ingresos: 234000, egresos: 75000 },
-    { dia: 'Dom', ingresos: 156000, egresos: 35000 }
-  ];
 
   export const metodosPago : MetodosPago[] = ['Efectivo', 'Tarjeta', 'Transferencia', 'QR/Digital'];
 

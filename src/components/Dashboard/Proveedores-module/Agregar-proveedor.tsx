@@ -2,7 +2,7 @@ import { ButtonCustom } from '@/components/ui/ButtonCustom';
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input';
 import { registeringProveedor } from '@/lib/proveedores/registerProveedor';
-import type { ProveedoresPropsWithoutId } from '@/types/proveedores';
+import type { DestinatariosPropsWithoutIdAndSubcategoryId } from '@/types/destinatarios';
 import React, { useState } from 'react'
 import { toast } from 'react-toastify';
 
@@ -15,7 +15,7 @@ export const AgregarProveedor = ({rubros}: AgregarProveedorProps) => {
   const [aliases, setAliases] = useState<string[]>([]);
   const [aliasInput, setAliasInput] = useState('');
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-  const [formData, setFormData] = useState<ProveedoresPropsWithoutId>({
+  const [formData, setFormData] = useState<DestinatariosPropsWithoutIdAndSubcategoryId>({
      name: '',
      subcategory: '',
      aliases: []
@@ -28,7 +28,7 @@ export const AgregarProveedor = ({rubros}: AgregarProveedorProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingSubmit(true);
-    const newProveedor: ProveedoresPropsWithoutId = {
+    const newProveedor: DestinatariosPropsWithoutIdAndSubcategoryId = {
       ...formData,
       aliases
     };

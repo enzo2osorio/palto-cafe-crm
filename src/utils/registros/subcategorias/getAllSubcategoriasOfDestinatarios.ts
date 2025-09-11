@@ -1,11 +1,11 @@
 import supabase from "@/lib/supabaseClient";
 
 
-export const getAllSubcategoriasOfProovedores = async () => {
+export const getAllSubcategoriasOfDestinatarios = async (categoryId: string): Promise<any | null> => {
     try {
         const { data, error } = await supabase.from('subcategorias')
         .select('name')
-        .eq('categoria_id', '3f7dd883-6be2-47a7-92a0-8bb6cde24a3c')
+        .eq('categoria_id', categoryId)
 
         if (error) {
             console.error('Error fetching all subcategorias of proveedores:', error);

@@ -1,25 +1,12 @@
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/formatCurrency";
-import type { EmpleadosProps } from "@/types/empleados";
-import { Edit3, Mail, Phone, Trash2 } from "lucide-react"
+import { useDestinatarioStore } from "@/lib/store/destinatariosStore";
+import { Edit3, Trash2 } from "lucide-react"
 
-interface TablaEmpleadosProps{
-    empleados: EmpleadosProps[];
-    searchTerm: string;
-    selectedCargo: string;
-}
 
-export const TablaEmpleados = ({ empleados, searchTerm, selectedCargo }: TablaEmpleadosProps) => {
-
-    const filteredEmpleados = empleados.filter(empleado => {
-    const matchesSearch = empleado.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         empleado.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         empleado.rut.includes(searchTerm);
-    const matchesCargo = selectedCargo === 'Todos los cargos' || empleado.cargo === selectedCargo;
-    return matchesSearch && matchesCargo;
-  });
+export const TablaEmpleados = () => {
+  const { destinatarios } = useDestinatarioStore();
 
   return (
     <Card className="card-warm border-0 overflow-hidden">
@@ -27,69 +14,35 @@ export const TablaEmpleados = ({ empleados, searchTerm, selectedCargo }: TablaEm
             <table className="w-full">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="text-left p-4 font-ui font-semibold text-foreground">Empleado</th>
-                  <th className="text-left p-4 font-ui font-semibold text-foreground">Cargo</th>
-                  <th className="text-left p-4 font-ui font-semibold text-foreground">Contacto</th>
-                  <th className="text-left p-4 font-ui font-semibold text-foreground">Turno</th>
+                  <th className="text-left p-4 font-ui font-semibold text-foreground">Empleado <span className="hidden md:inline">/ Cargo de empleado</span></th>
+                  <th className="text-left p-4 font-ui font-semibold text-foreground">Subcategoría</th>
+                  <th className="text-left p-4 font-ui font-semibold text-foreground ">ALIASES</th>
                   <th className="text-left p-4 font-ui font-semibold text-foreground">Salario</th>
-                  <th className="text-left p-4 font-ui font-semibold text-foreground">Asistencia</th>
-                  <th className="text-left p-4 font-ui font-semibold text-foreground">Estado</th>
                   <th className="text-left p-4 font-ui font-semibold text-foreground">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredEmpleados.map((empleado) => (
+                {destinatarios.map((empleado) => (
                   <tr key={empleado.id} className="border-b border-border hover:bg-muted/20 transition-colors">
                     <td className="p-4">
                       <div className="space-y-1">
-                        <p className="font-ui font-medium text-foreground">{empleado.nombre} {empleado.apellido}</p>
-                        <p className="font-ui text-sm text-muted-foreground">{empleado.rut}</p>
+                        <p className="font-ui font-medium text-foreground">{empleado.name}</p>
                       </div>
                     </td>
                     <td className="p-4">
-                      <p className="font-ui text-foreground">{empleado.cargo}</p>
+                      <p className="font-ui text-foreground">{empleado.subcategory}</p>
+                    </td>
+                    <td className="py-4">
+                     <div className="flex items-center justify-center flex-wrap max-w-64 gap-6">
+                       {empleado.aliases && empleado.aliases.map((alias, index) => (
+                        <span key={index} className="bg-primary/10 px-2 py-1 rounded-lg text-primary border-primary/20 font-ui w-max">
+                          {alias}
+                        </span>
+                      ))}
+                     </div>
                     </td>
                     <td className="p-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <Phone className="w-3 h-3 text-muted-foreground" />
-                          <span className="font-ui text-sm text-foreground">{empleado.telefono}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Mail className="w-3 h-3 text-muted-foreground" />
-                          <span className="font-ui text-sm text-foreground">{empleado.email}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <Badge className="bg-primary/10 text-primary border-primary/20 font-ui">
-                        {empleado.turno}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <p className="font-ui font-medium text-foreground">{formatCurrency(empleado.salario.toString())}</p>
-                    </td>
-                    <td className="p-4">
-                      <div className="space-y-1">
-                        <p className="font-ui font-medium text-foreground">{empleado.asistencia}%</p>
-                        <div className="w-16 bg-muted rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full ${empleado.asistencia >= 90 ? 'bg-success' : empleado.asistencia >= 80 ? 'bg-warning' : 'bg-destructive'}`}
-                            style={{ width: `${empleado.asistencia}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <Badge className={`${
-                        empleado.estado === 'activo' 
-                          ? 'bg-success/10 text-success border-success/20'
-                          : empleado.estado === 'vacaciones'
-                          ? 'bg-warning/10 text-warning border-warning/20'
-                          : 'bg-muted-foreground/10 text-muted-foreground border-muted-foreground/20'
-                      } font-ui`}>
-                        {empleado.estado === 'activo' ? 'Activo' : empleado.estado === 'vacaciones' ? 'Vacaciones' : 'Inactivo'}
-                      </Badge>
+                      <p className="font-ui font-medium text-foreground">{formatCurrency(empleado?.individualPayment?.toString() || '')}</p>
                     </td>
                     <td className="p-4">
                       <div className="flex space-x-2">

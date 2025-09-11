@@ -4,7 +4,7 @@ interface Props{
 
 export function KPISCardsSkeleton({amountCards = 3}: Props) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
+    <div className={`grid grid-cols-1 md:grid-cols-${amountCards} gap-6 animate-pulse`}>
       {Array.from({ length: amountCards }, (_, i) => (
         <div
           key={i}

@@ -5,8 +5,8 @@ export type CargoEmpleado = 'Todos los cargos' | 'Barista Principal' | 'Cocinero
 
 export interface EmpleadosProps{
     id: number;
-    nombre: string;
-    apellido: string;
+    name: string;
+    
     rut: string;
     cargo: string;
     telefono: string;

@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input'
 import { SelectCustom } from '@/components/ui/SelectCustom';
-import { getProveedoresWithAliasesAndSubcategorias } from '@/utils/registros/proveedores/getAllProveedores';
+import { useDestinatarioStore } from '@/lib/store/destinatariosStore';
+import { getDestinatariosWithAliasesAndSubcategoriasByCategoryId } from '@/utils/registros/destinatarios-GLOBAL/getDestinatarios';
 import { Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react';
 
@@ -12,14 +13,15 @@ interface FiltroyBusquedaProps {
     setMainStructure: (structure: any[]) => void;
     setSelectedOptionGlobal: (option: string) => void;
     optionForSelect: string[];
+    categoria: string;
 }
 
-export const FiltroyBusqueda = ({ setSearchTermGlobal, setMainStructure, setSelectedOptionGlobal, optionForSelect,loading, setLoading }: FiltroyBusquedaProps) => {
+export const FiltroyBusqueda = ({ setSearchTermGlobal, setMainStructure, setSelectedOptionGlobal, optionForSelect,loading, setLoading, categoria }: FiltroyBusquedaProps) => {
 
   const timerRef = useRef<number | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const [localRubro, setLocalRubro] = useState('Todos');
-
+  const { pagination, setPagination, selectedRubro } = useDestinatarioStore();
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement | HTMLSelectElement;
     const isSelect = target.tagName === 'SELECT';
@@ -40,11 +42,13 @@ export const FiltroyBusqueda = ({ setSearchTermGlobal, setMainStructure, setSele
         const search = isSelect ? '' : value;
         const subcatFromSelect = isSelect ? (value === 'Todos' ? '' : value) : (localRubro === 'Todos' ? '' : localRubro);
 
+        const existingLimit = pagination.limit;
         // sincronizar filtros en el store
         setSearchTermGlobal(search);
-        setSelectedOptionGlobal(subcatFromSelect);
 
-        const proveedores = await getProveedoresWithAliasesAndSubcategorias({ page: 0, limit: 10 }, search, subcatFromSelect);
+        setSelectedOptionGlobal(subcatFromSelect);
+        setPagination?.({ page: 0, limit: (existingLimit || 10) });
+        const proveedores = await getDestinatariosWithAliasesAndSubcategoriasByCategoryId(categoria,{ page: 0, limit: 10 }, search, subcatFromSelect);
         if (proveedores) setMainStructure(proveedores);
       } catch (err) {
         console.error('Error buscando proveedores', err);
@@ -59,6 +63,10 @@ export const FiltroyBusqueda = ({ setSearchTermGlobal, setMainStructure, setSele
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    setLocalRubro(selectedRubro);
+  }, [selectedRubro])
 
 
   return (
@@ -78,7 +86,10 @@ export const FiltroyBusqueda = ({ setSearchTermGlobal, setMainStructure, setSele
                 disabled={loading}
                 value={localRubro}
                 onChange={handleSearchChange}
-                options={optionForSelect.map(rubro => ({ value: rubro, label: rubro }))}
+                options={optionForSelect.map(rubro => {
+                 const label = typeof rubro === 'string' ? rubro : (rubro as any)?.name ?? String(rubro);
+                 return { value: label, label };
+               })}
             />
 
         </div>

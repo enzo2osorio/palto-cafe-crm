@@ -1,6 +1,6 @@
-import type { ProveedoresPropsWithoutId } from "@/types/proveedores";
 import supabase from "../supabaseClient";
 import { getSubcategoryIdByName } from "@/utils/registros/subcategorias/getSubcategoryIdByName";
+import type { DestinatariosPropsWithoutIdAndSubcategoryId } from "@/types/destinatarios";
 
 type InsertedProveedor = {
   id: string;
@@ -10,7 +10,7 @@ type InsertedProveedor = {
   updated_at?: string;
 };
 
-export const registerProveedor = async (proveedor: ProveedoresPropsWithoutId, subcategoryId: string): Promise<InsertedProveedor | null> => {
+export const registerProveedor = async (proveedor: DestinatariosPropsWithoutIdAndSubcategoryId, subcategoryId: string): Promise<InsertedProveedor | null> => {
     try {
         // pedir el registro insertado con .select().single() para obtener el id
         const { data, error } = await supabase
@@ -60,7 +60,7 @@ export const registerAliases = async (proveedorId: string, aliases: string[]) =>
     }
 }
 
-export const registeringProveedor = async (proveedorr: ProveedoresPropsWithoutId) => {
+export const registeringProveedor = async (proveedorr: DestinatariosPropsWithoutIdAndSubcategoryId) => {
     try {
         const ss = proveedorr.subcategory
         console.log({ss})

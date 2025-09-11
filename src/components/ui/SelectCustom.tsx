@@ -26,15 +26,21 @@ export const SelectCustom = ({
         className={`bg-accent px-5 py-3 outline-2 transition-colors cursor-pointer focus:outline-white pr-12 rounded-2xl text-base font-body ${className}`}
         {...props}
       >
-        {options?.map((option,id) => (
-          <option
-            key={option.value + id}
-            value={option.value}
-            className="text-muted-foreground font-body w-full border-none"
-          >
-            {option.label}
-          </option>
-        ))}
+        {options?.map((option, id) => {
+          const labelText = typeof option.label === 'string'
+            ? option.label
+            : (option.label && (option.label as any).name) ?? JSON.stringify(option.label);
+          const valueText = typeof option.value === 'string' ? option.value : labelText;
+          return (
+            <option
+              key={valueText + id}
+              value={valueText}
+              className="text-muted-foreground font-body w-full border-none"
+            >
+              {labelText}
+            </option>
+          );
+        })}
       </select>
       {isSelectActive ? (
         <ChevronRight className="w-4 absolute right-4 top-1/2 transform -translate-y-1/2" />

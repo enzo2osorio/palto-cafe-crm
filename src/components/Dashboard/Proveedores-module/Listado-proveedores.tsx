@@ -1,16 +1,15 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { useProveedorStore } from '@/lib/store/proovedorStore'
-import type { ProveedoresProps } from '@/types/proveedores'
-import { Badge, Edit3, Mail, MapPin, Phone, Trash2, User } from 'lucide-react'
+import { useDestinatarioStore } from '@/lib/store/destinatariosStore'
+import {Edit3, Trash2 } from 'lucide-react'
 
 export const ListadoProveedores = () => {
 
-  const {proveedores} = useProveedorStore();
+  const {destinatarios} = useDestinatarioStore();
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {proveedores.map((proveedor) => (
+          {destinatarios.map((proveedor) => (
             <Card
               key={proveedor.id}
               className="card-warm border-0 overflow-hidden hover:shadow-lg transition-shadow"

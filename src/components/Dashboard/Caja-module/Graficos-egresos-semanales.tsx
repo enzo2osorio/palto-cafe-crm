@@ -1,32 +1,40 @@
 import { Card } from "@/components/ui/card"
 import { LineChart } from '@mui/x-charts/LineChart';
-import type { GraphicProps } from "./inicio-module";
-import { getLast6Months } from "@/utils/date/getLast6Months";
-// import { dataset } from './basicDataset';
+// import { getLast6Months } from "@/utils/date/getLast6Months";
+// import type { GraphicProps } from "../Inicio-module/inicio-module";
+import type { MovimientosSemanales } from "@/types/movimientosSemanales";
 
 const margin = { right: 24 };
-export interface GraficoVentasMensualesProps {
-  data?: GraphicProps[]; // lo hago opcional porque `dataGraphic` puede ser undefined
+
+interface GraficoEgresosSemanalesProps {
+  data: MovimientosSemanales | undefined;
 }
 
-export const GraficoEgresosMensuales = ({ data }: GraficoVentasMensualesProps) => {
+export const GraficoEgresosSemanales = ({ data }: GraficoEgresosSemanalesProps) => {
 
-  const xLabels : string[] = getLast6Months();
+    if(!data){
+      return null;
+    }
 
-  return (
+     const singleSeries = [
+    {
+      data: data.buckets ?? [],
+      label: "Egresos"
+    }
+  ];
+
+    return (
     <Card className="card-warm p-6 border-0">
           <div className="space-y-6">
             <h3 className="font-body text-2xl text-center text-foreground">
-              Egresos mensuales de cada dueño
+              Egresos semanales totales
             </h3>
             <div className="w-full e rounded-2xl pr-10">
               <LineChart
+                
                 height={300}
-                series={(data ?? []).map((owner) => ({
-                  data: owner.monthlyIngresos,
-                  label: owner.owner,
-                }))}
-                xAxis={[{ scaleType: 'point', data: xLabels }]}
+                series= {singleSeries}
+                xAxis={[{ scaleType: 'point', data: data?.labels }]}
                 yAxis={[{ width: 50 }]}
                 margin={margin}
                 sx={{
