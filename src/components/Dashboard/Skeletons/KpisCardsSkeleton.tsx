@@ -1,7 +1,11 @@
-export function KPISCardsSkeleton() {
+interface Props{
+  amountCards?: number;
+}
+
+export function KPISCardsSkeleton({amountCards = 3}: Props) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
+    <div className={`grid grid-cols-1 md:grid-cols-${amountCards} gap-6 animate-pulse`}>
+      {Array.from({ length: amountCards }, (_, i) => (
         <div
           key={i}
           className="p-6 py-10 rounded-xl bg-muted/50 flex flex-col gap-4"

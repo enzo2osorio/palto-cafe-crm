@@ -1,4 +1,3 @@
-import { proveedores, rubros } from '@/utils/proveedores-blank';
 import { KPISProveedores } from './Kpis-cards';
 import { ContainerListadoProveedores } from './Container-listado-proveedores';
 import { ButtonCustom } from '@/components/ui/ButtonCustom';
@@ -7,14 +6,21 @@ import { useEffect, useState } from 'react';
 import { AgregarProveedor } from './Agregar-proveedor';
 import { getMontlyCostOfSuppliers } from '@/utils/registros/registrosMensuales/getMonthlyCostsOfSuppliers';
 import type { CustomCardProps } from '@/components/Reusable/CustomCard';
-import { getCountProveedores } from '@/utils/registros/proveedores/getAllProveedores';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { getTopProveedor } from '@/utils/registros/proveedores/getTopProveedor';
+import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
+import { getAllSubcategoriasOfDestinatarios } from '@/utils/registros/subcategorias/getAllSubcategoriasOfDestinatarios';
+import { useDestinatarioStore } from '@/lib/store/destinatariosStore';
+import { getCountDestinatariosByCategoryId, getDestinatariosWithAliasesAndSubcategoriasByCategoryId } from '@/utils/registros/destinatarios-GLOBAL/getDestinatarios';
+import type { PaginationForDestinatarios } from '@/types/pagination';
+
 
 export function ProveedoresModule() {
 
   const [agregarProveedor, setAgregarProveedor] = useState(false);
   const [monthlyCostsForProveedores, setMonthlyCostsForProveedores] = useState<CustomCardProps[]>([]);
+  const [isLoadingCosts, setIsLoadingCosts] = useState(true);
+  const { setDestinatarios, setSubcategorias, subcategorias,searchTerm, selectedRubro, setLoading, pagination } = useDestinatarioStore();
 
   const handleAgregarProveedor = () => {
     setAgregarProveedor(!agregarProveedor);
@@ -32,9 +38,11 @@ export function ProveedoresModule() {
       const totalMonto = costs.reduce((acc: number, cost: { monto: number }) => acc + (Number(cost.monto) || 0), 0);
       const totalEnPesos = formatCurrency(totalMonto.toString())
 
+      const titleBadge = totalMonto > 9000000 ? 'Alerta de bancarrota' : totalMonto > 1000000 ? 'Amigo es una banda' : totalMonto > 500000 ? 'Considera Ahorrar' : "Sin mucho gasto";
+
       const customCardFormat: CustomCardProps = {
         LeftTop: Plus,
-        titleForBadge: 'Es una banda',
+        titleForBadge: `${titleBadge}`,
         titleForCard: `${totalEnPesos}`,
         subtitleForCard: `Compras totales de este mes`,
         miniDescriptionForCard: 'Monto total de compras realizadas'
@@ -43,12 +51,12 @@ export function ProveedoresModule() {
     };
 
     const fetchAllSuppliers = async (): Promise<CustomCardProps | null> => {
-      const allSuppliers = await getCountProveedores();
-      if (!allSuppliers) {
-        console.error('No se encontraron proveedores');
+      const allSuppliersCount = await getCountDestinatariosByCategoryId('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c') // devuelve number
+      if (typeof allSuppliersCount !== 'number') {
+        console.error('No se pudieron contar los proveedores');
         return null;
       }
-      const count = allSuppliers.length;
+      const count = allSuppliersCount;
 
       const customCardFormat: CustomCardProps = {
         LeftTop: User,
@@ -79,11 +87,21 @@ export function ProveedoresModule() {
       return customCardFormat;
     }
 
+    const initProveedoresAliases = async (pagination : PaginationForDestinatarios) => {
+      const proveedoresAliases = await getDestinatariosWithAliasesAndSubcategoriasByCategoryId('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c', pagination, searchTerm, selectedRubro);
+      if (!proveedoresAliases) {
+        console.error('No se encontraron proveedores con alias');
+        return null;
+      }
+      return proveedoresAliases
+    }
+
     const initAllKPIs = async () => {
+      setIsLoadingCosts(true);
       const [monthlyCosts, allSuppliers, topProveedor] = await Promise.all([
         fetchMonthlyCosts(),
         fetchAllSuppliers(),
-        fetchTopProveedor()
+        fetchTopProveedor(),
       ]);
 
       const cards: CustomCardProps[] = [];
@@ -91,13 +109,47 @@ export function ProveedoresModule() {
       if (allSuppliers) cards.push(allSuppliers);
       if (topProveedor) cards.push(topProveedor);
       setMonthlyCostsForProveedores(cards);
+      setIsLoadingCosts(false);
     };
 
-    // Ejecutar
+    const initListadoProveedores = async () => {
+      setLoading(true);
+      const [proovedores , subcategorias] = await Promise.all([
+        initProveedoresAliases({page:0, limit:10}),
+        getAllSubcategoriasOfDestinatarios('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c')
+      ]);
+
+      if (subcategorias) {
+        const subcats = subcategorias.map((subcat : { name: string }) => subcat.name);
+        setSubcategorias(['Todos', ...subcats]);
+      }
+      if (proovedores) setDestinatarios(proovedores);
+      setLoading(false);
+    };
+
     initAllKPIs();
+    initListadoProveedores();
 
   }, [])
 
+  useEffect(() => {
+    const updatingProveedores = async () => {
+      setLoading(true);
+      const proveedores = await getDestinatariosWithAliasesAndSubcategoriasByCategoryId('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c', pagination, searchTerm, selectedRubro);
+      if (!proveedores) {
+        console.error('No se encontraron proveedores');
+        return null;
+      }
+      setDestinatarios(proveedores);
+      setLoading(false);
+    }
+    updatingProveedores();
+
+    return () => {
+      setDestinatarios([]);
+    }
+
+  }, [pagination, searchTerm, selectedRubro])
 
 
   return (
@@ -122,16 +174,15 @@ export function ProveedoresModule() {
      {
       !agregarProveedor ? (
         <>
+       {isLoadingCosts ? <KPISCardsSkeleton/> : (
          <KPISProveedores proveedores={monthlyCostsForProveedores} />
+       )}
 
-      <ContainerListadoProveedores
-      proveedores={proveedores}
-      rubros={rubros}
-      />
+      <ContainerListadoProveedores/>
         </>
       ) : (
         <AgregarProveedor
-        rubros={rubros}
+        rubros={subcategorias}
         />
       )
      }

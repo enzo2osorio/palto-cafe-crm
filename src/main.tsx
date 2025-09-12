@@ -4,7 +4,6 @@ import "./index.css";
 import { Dashboard } from "./app/Dashboard/dashboard";
 import { DashboardLayout } from "./app/Layout/dashboard-layout";
 import { EmpleadosModule } from "./components/Dashboard/Empleados-module/empleados-module";
-import { ProductosModule } from "./components/Dashboard/Productos-module/productos-module";
 import { ProveedoresModule } from "./components/Dashboard/Proveedores-module/proveedores-module";
 import { ReportesModule } from "./components/Dashboard/Reportes-module/reportes-module";
 import { CajaModule } from "./components/Dashboard/Caja-module/caja-module";
@@ -43,7 +42,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <Route path="caja" element={<CajaModule />} />
       <Route path="comprobantes" element={<ComprobantesModule/>} />
       <Route path="empleados" element={<EmpleadosModule />} />
-      <Route path="productos" element={<ProductosModule />} />
       <Route path="proveedores" element={<ProveedoresModule />} />
       <Route path="reportes" element={<ReportesModule/>} />
     </Route>

@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card"
 import { LineChart } from '@mui/x-charts/LineChart';
 import type { GraphicProps } from "./inicio-module";
-import { getLast6Months } from "@/utils/registros/registrosMensuales/getLast6Months";
+import { getLast6Months } from "@/utils/date/getLast6Months";
 // import { dataset } from './basicDataset';
 
 const margin = { right: 24 };
@@ -21,7 +21,6 @@ export const GraficoEgresosMensuales = ({ data }: GraficoVentasMensualesProps) =
             </h3>
             <div className="w-full e rounded-2xl pr-10">
               <LineChart
-                
                 height={300}
                 series={(data ?? []).map((owner) => ({
                   data: owner.monthlyIngresos,

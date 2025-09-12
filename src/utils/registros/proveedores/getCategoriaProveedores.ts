@@ -27,3 +27,33 @@ export const getCategoriaIdOfProveedores = async () => {
         return null;
     }
 }
+
+export const getCategoriaIdByName = async (categoriaName : string) => {
+    try {
+        console.log('🔍 Buscando categoría:', categoriaName);
+        
+        // Búsqueda insensible a mayúsculas/minúsculas y segura ante resultados vacíos
+        const { data, error } = await supabase
+            .from("categorias")
+            .select("id")
+            .ilike("name", categoriaName);
+
+        if (error) {
+            console.error("❌ Error al obtener la categoría:", error);
+            return null;
+        }
+
+        console.log('📊 Datos encontrados:', data);
+
+        if (!data || data.length === 0) {
+            console.warn("⚠️ No se encontró la categoría en la tabla 'categorias'. Verifica nombre/espacios/case.");
+            return null;
+        }
+
+        console.log('✅ Categoría encontrada:', data);
+        return data;
+    } catch (error) {
+        console.error("💥 Error obteniendo categoría:", error);
+        return null;
+    }
+}

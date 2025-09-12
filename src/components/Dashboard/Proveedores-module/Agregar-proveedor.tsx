@@ -1,8 +1,10 @@
 import { ButtonCustom } from '@/components/ui/ButtonCustom';
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input';
-import type { ProveedoresPropsWithoutId } from '@/types/proveedores';
+import { registeringProveedor } from '@/lib/proveedores/registerProveedor';
+import type { DestinatariosPropsWithoutIdAndSubcategoryId } from '@/types/destinatarios';
 import React, { useState } from 'react'
+import { toast } from 'react-toastify';
 
 interface AgregarProveedorProps {
   rubros: string[];
@@ -10,28 +12,64 @@ interface AgregarProveedorProps {
 
 export const AgregarProveedor = ({rubros}: AgregarProveedorProps) => {
 
-const [formData, setFormData] = useState<ProveedoresPropsWithoutId>({
-    nombre: '',
-    ruc: '',
-    rubro: '',
-    contacto: '',
-    telefono: '',
-    email: '',
-    direccion: '',
-    estado: 'activo',
-    observaciones: '',
-    ultimaCompra: '',
-    montoTotal: ''
+  const [aliases, setAliases] = useState<string[]>([]);
+  const [aliasInput, setAliasInput] = useState('');
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [formData, setFormData] = useState<DestinatariosPropsWithoutIdAndSubcategoryId>({
+     name: '',
+     subcategory: '',
+     aliases: []
   });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registrar proveedor:', formData);
-    // Aquí iría la lógica para guardar el proveedor
+    setLoadingSubmit(true);
+    const newProveedor: DestinatariosPropsWithoutIdAndSubcategoryId = {
+      ...formData,
+      aliases
+    };
+    
+    const proveedor = await registeringProveedor(newProveedor);
+    if (!proveedor || proveedor.error) {
+      console.error('No se registró proveedor:', proveedor);
+      toast.error(proveedor?.error || 'Error al registrar proveedor');
+      setLoadingSubmit(false);
+      return null;
+    }
+    setLoadingSubmit(false);
+    toast.success('Proveedor registrado con éxito');
+    setFormData({
+      name: '',
+      subcategory: '',
+      aliases: []
+    });
+    setAliases([]);
+    setAliasInput('');
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  };
+
+   const handleAliasChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAliasInput(e.target.value);
+  };
+
+  const handleAliasKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const value = aliasInput.trim();
+      if (!value) return;
+      setAliases(prev => [...prev, value]);
+      setAliasInput('');
+    }
+  };
+  
+  const handleRemoveAlias = (index: number) => {
+    setAliases(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -45,96 +83,69 @@ const [formData, setFormData] = useState<ProveedoresPropsWithoutId>({
                   <label className="font-ui font-medium text-foreground">Nombre de la empresa</label>
                   <Input
                     placeholder="Nombre del proveedor"
-                    value={formData.nombre}
-                    onChange={(e) => handleInputChange('nombre', e.target.value)}
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
                     className="bg-input-background border-0 rounded-2xl font-ui"
                   />
                 </div>
 
-                {/* RUC */}
+                {/* Subcategory */}
                 <div className="space-y-2">
-                  <label className="font-ui font-medium text-foreground">RUC</label>
-                  <Input
-                    placeholder="12.345.678-9"
-                    value={formData.ruc}
-                    onChange={(e) => handleInputChange('ruc', e.target.value)}
-                    className="bg-input-background border-0 rounded-2xl font-ui"
-                  />
-                </div>
-
-                {/* Rubro */}
-                <div className="space-y-2">
-                  <label className="font-ui font-medium text-foreground">Rubro</label>
-                  <select
-                    value={formData.rubro}
-                    onChange={(e) => handleInputChange('rubro', e.target.value)}
-                    className="w-full bg-input-background border-0 rounded-2xl px-4 py-3 font-ui"
-                  >
-                    <option value="">Seleccionar rubro</option>
-                    {rubros.slice(1).map((rubro) => (
-                      <option key={rubro} value={rubro}>{rubro}</option>
+                  <label className="font-ui font-medium text-foreground">Subcategoría</label>
+                  <select 
+                    value={formData.subcategory}
+                    onChange={(e) => handleInputChange('subcategory', e.target.value)}
+                  className="w-full bg-input-background border-0 text-sm rounded-2xl px-4 py-2 font-ui">
+                    <option className='text-muted-foreground font-body w-full border-none text-sm' value=''>Seleccionar subcategoría</option>
+                    {rubros.slice(1).map((subcategory) => (
+                      <option className='text-muted-foreground font-body w-full border-none text-sm' key={subcategory} value={subcategory}>{subcategory}</option>
                     ))}
                   </select>
-                </div>
-
-                {/* Contacto */}
-                <div className="space-y-2">
-                  <label className="font-ui font-medium text-foreground">Persona de contacto</label>
-                  <Input
-                    placeholder="Nombre del contacto"
-                    value={formData.contacto}
-                    onChange={(e) => handleInputChange('contacto', e.target.value)}
-                    className="bg-input-background border-0 rounded-2xl font-ui"
-                  />
-                </div>
-
-                {/* Teléfono */}
-                <div className="space-y-2">
-                  <label className="font-ui font-medium text-foreground">Teléfono</label>
-                  <Input
-                    placeholder="+56 9 1234 5678"
-                    value={formData.telefono}
-                    onChange={(e) => handleInputChange('telefono', e.target.value)}
-                    className="bg-input-background border-0 rounded-2xl font-ui"
-                  />
-                </div>
-
-                {/* Email */}
-                <div className="space-y-2">
-                  <label className="font-ui font-medium text-foreground">Email</label>
-                  <Input
-                    type="email"
-                    placeholder="contacto@proveedor.cl"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="bg-input-background border-0 rounded-2xl font-ui"
-                  />
-                </div>
+                </div>               
               </div>
 
-              {/* Dirección */}
-              <div className="space-y-2">
-                <label className="font-ui font-medium text-foreground">Dirección</label>
+              {/* Aliases */}
+              <div className="space-y-2 mt-10">
+                <div className='flex items-center justify-between gap-2'>
+                  <div className='flex flex-col gap-2 items-start justify-between w-full'>
+                  <label className="font-ui text-lg font-medium text-foreground">Alias del proveedor</label>
+                <span className='font-ui '>Escribe uno a uno los alias del proveedor</span>
+                </div>
+                <div className='aliases-container w-full h-full '>
+                  {
+                    aliases.length === 0 ? (
+                      <p className="">----------sin alias aún-----------</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {aliases.map((a, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            className="px-3 py-1 cursor-pointer rounded-full bg-muted-foreground text-sm flex items-center gap-2"
+                            onClick={() => handleRemoveAlias(idx)}
+                          >
+                            <span>{a}</span>
+                            <span className="opacity-60 text-xs">×</span>
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  }
+                </div>
+                </div>
                 <Input
-                  placeholder="Dirección completa"
-                  value={formData.direccion}
-                  onChange={(e) => handleInputChange('direccion', e.target.value)}
-                  className="bg-input-background border-0 rounded-2xl font-ui"
-                />
+                placeholder="Alias"
+                value={aliasInput}
+                onChange={handleAliasChange}
+                onKeyDown={handleAliasKeyDown}
+                className="bg-input-background border-0 rounded-2xl font-ui"
+              />
               </div>
 
-              {/* Observaciones */}
-              <div className="space-y-2">
-                <label className="font-ui font-medium text-foreground">Observaciones</label>
-                <textarea
-                  placeholder="Notas adicionales sobre el proveedor..."
-                  value={formData.observaciones}
-                  onChange={(e) => handleInputChange('observaciones', e.target.value)}
-                  rows={3}
-                  className="w-full bg-input-background border-0 rounded-2xl px-4 py-3 font-ui resize-none"
-                />
-              </div>
-              <ButtonCustom type="submit">
+              <ButtonCustom 
+              disabled={loadingSubmit}
+              className="disabled:bg-muted/50 disabled:cursor-not-allowed"
+              type="submit">
                 Registrar proveedor
               </ButtonCustom>
             </form>

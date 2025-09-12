@@ -4,7 +4,6 @@ import {
   TrendingUp, 
   BarChart3, 
   ChevronDown,
-  Package,
   Users,
   UserCheck,
   Receipt,
@@ -41,8 +40,7 @@ export function Navbar() {
   }, [location.pathname])
 
 
-  const registrosItems = [
-    { id: 'productos', label: 'Productos', icon: Package },
+  const registrosItems = [    
     { id: 'proveedores', label: 'Proveedores', icon: Users },
     { id: 'empleados', label: 'Empleados', icon: UserCheck },
   ];

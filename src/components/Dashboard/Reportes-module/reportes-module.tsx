@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ventasPorDia, ventasPorCategoria,metricsComparativas, topProductos } from '@/utils/reportes-blank';
-
 import { ButtonsControlReportes } from './ButtonsControlReportes';
 import { DashboardGeneral } from './Dashboard-general/Dashboard-general';
 import { AnalisisVentas } from './Analisis-ventas/Analisis-ventas';
-import { ProductosGeneral } from './Productos/Productos-general';
-import { FinancieroGeneral } from './Analisis-financiero/Financiero-general';
+import { RentabilidadFlujo } from './Rentabilidad-flujo/Rentabilidad-flujo';
+import { ProyeccionesGeneral } from './Proyecciones/Proyecciones-general';
 
 export function ReportesModule() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -23,8 +21,8 @@ export function ReportesModule() {
           </h1>
         </div>
         <ButtonsControlReportes
-        selectedPeriod={selectedPeriod}
-        setSelectedPeriod={setSelectedPeriod}
+          selectedPeriod={selectedPeriod}
+          setSelectedPeriod={setSelectedPeriod}
         />
       </div>
 
@@ -37,40 +35,40 @@ export function ReportesModule() {
             Dashboard General
           </TabsTrigger>
           <TabsTrigger 
+            value="rentabilidad" 
+            className="rounded-xl font-ui data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            Rentabilidad & Flujo
+          </TabsTrigger>
+          <TabsTrigger 
+            value="proyecciones" 
+            className="rounded-xl font-ui data-[state=active]:bg-white data-[state=active]:shadow-sm"
+          >
+            Proyecciones
+          </TabsTrigger>
+          <TabsTrigger 
             value="ventas" 
             className="rounded-xl font-ui data-[state=active]:bg-white data-[state=active]:shadow-sm"
           >
             Análisis de Ventas
           </TabsTrigger>
-          <TabsTrigger 
-            value="productos" 
-            className="rounded-xl font-ui data-[state=active]:bg-white data-[state=active]:shadow-sm"
-          >
-            Productos
-          </TabsTrigger>
-          <TabsTrigger 
-            value="financiero" 
-            className="rounded-xl font-ui data-[state=active]:bg-white data-[state=active]:shadow-sm"
-          >
-            Análisis Financiero
-          </TabsTrigger>
         </TabsList>
 
-        {/* tab dashboard general */}
+        {/* Dashboard General */}
         <DashboardGeneral
-        metricsComparativas={metricsComparativas}
-        ventasPorCategoria={ventasPorCategoria}
-        ventasPorDia={ventasPorDia}
+          // metricsComparativas={metricsComparativas}
+          // ventasPorCategoria={ventasPorCategoria}
+          // ventasPorDia={ventasPorDia}
         />
 
-        {/* tab analisis ventas */}
-        <AnalisisVentas/>
+        {/* Rentabilidad & Flujo */}
+        <RentabilidadFlujo selectedPeriod={selectedPeriod} />
 
-        <ProductosGeneral
-        topProductos={topProductos}
-        />
+        {/* Proyecciones */}
+        <ProyeccionesGeneral selectedPeriod={selectedPeriod} />
 
-        <FinancieroGeneral/>
+        {/* Análisis de Ventas */}
+        <AnalisisVentas />
       </Tabs>
     </div>
   );

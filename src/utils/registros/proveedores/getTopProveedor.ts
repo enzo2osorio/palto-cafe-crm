@@ -1,10 +1,10 @@
 import supabase from "@/lib/supabaseClient";
-import { getAllProveedoresIds } from "./getAllProveedores"
-import { getLastMonth } from "../registrosMensuales/getLastMonth";
+import { getLastMonth } from "../../date/getLastMonth";
+import { getAllDestinatariosIdsByCategoryId } from "../destinatarios-GLOBAL/getDestinatarios";
 
 export const getTopProveedor = async () => {
 
-    const proveedoresIds = await getAllProveedoresIds();
+    const proveedoresIds = await getAllDestinatariosIdsByCategoryId('3f7dd883-6be2-47a7-92a0-8bb6cde24a3c');
 
     if(!proveedoresIds || proveedoresIds.length === 0) {
         console.error('No se encontraron proveedores');

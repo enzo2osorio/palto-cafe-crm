@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { getLast6Months } from '@/utils/registros/registrosMensuales/getLast6Months';
+import { getLast6Months } from '@/utils/date/getLast6Months';
 import { LineChart } from '@mui/x-charts';
 import type { GraficoVentasMensualesProps } from './Grafico-egresos-mensuales';
 
