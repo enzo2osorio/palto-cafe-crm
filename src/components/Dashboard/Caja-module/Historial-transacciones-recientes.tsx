@@ -3,7 +3,7 @@ import { SelectCustom } from "@/components/ui/SelectCustom"
 import { formatCurrency } from "@/lib/formatCurrency"
 import { getRegistrosWithDestinatariosAndMetodoPagoAndCuentaContable, type LastRegistrosProps } from "@/utils/registros/getRegistros"
 import { Filter, TrendingDown, TrendingUp } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 
 interface HistorialTransaccionesRecientesProps{
     transacciones : LastRegistrosProps[];

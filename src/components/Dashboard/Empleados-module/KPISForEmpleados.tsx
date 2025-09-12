@@ -1,8 +1,5 @@
 
 import { CustomCard, type CustomCardProps } from "@/components/Reusable/CustomCard";
-import { formatCurrency } from "@/lib/formatCurrency";
-import type { EmpleadosProps } from "@/types/empleados";
-import { Calendar, CheckCircle, Clock, User } from "lucide-react"
 
 interface KPISForEmpleadosProps{
     KPISempleados : CustomCardProps[]

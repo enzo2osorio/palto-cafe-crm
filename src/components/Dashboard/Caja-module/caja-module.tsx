@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { categorias, metodosPago } from '@/utils/caja-blank';
 import { KPISForCaja } from './KPISForCaja';
 import { HistorialTransaccionesRecientes } from './Historial-transacciones-recientes';
 import { BotonesControl } from './Botones-historial-registro';
-import { RegistroCaja } from './registro-caja';
 import { getFlujoDiarioyDeAyer } from '@/utils/flujo-de-caja/ingresos-egresos/getFlujosDeCaja';
 import type { KPISProps } from '@/types/inicio';
 import { formatCurrency } from '@/lib/formatCurrency';
@@ -152,13 +150,13 @@ export function CajaModule() {
       </>
       )}
       {/* Formulario de registro (condicional) */}
-      {showRegistrarForm && (
+      {/* {showRegistrarForm && (
         <RegistroCaja
         categorias={categorias}
         setShowRegistrarForm={setShowRegistrarForm}
         metodosPago={metodosPago}
         />
-      )}
+      )} */}
 
       {/* Gráfico de flujo semanal ingresos y egresos */}
       {!showRegistrarForm && (

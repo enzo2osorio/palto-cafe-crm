@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { getDistribucionGastos, getSubcategoriasDeCategoria, type DistribucionGastos, type SubcategoriaGasto } from '@/utils/reportes/getDistribucionGastos';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -32,7 +31,10 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
     fetchGastos();
   }, [mesesAtras]);
 
-  const handleCategoryClick = async (categoria: string) => {
+  const handleCategoryClick = async (e: React.MouseEvent, categoria: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (expandedCategory === categoria) {
       setExpandedCategory(null);
       setSubcategorias([]);
@@ -60,7 +62,7 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
       'colaboradores': '🤝',
       'otros': '📦'
     };
-    return icons[categoria] || '📊';
+    return icons[categoria.toLowerCase()] || '📊';
   };
 
   const getCategoryColor = (index: number) => {
@@ -77,6 +79,7 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
   if (loading) {
     return (
       <Card className="card-warm p-6 border-0">
+        <h3 className="font-body text-xl text-foreground mb-6">Distribución de Gastos</h3>
         <div className="animate-pulse space-y-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-center space-x-4">
@@ -98,10 +101,9 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
         {gastos.map((gasto, index) => (
           <div key={gasto.categoria}>
             {/* Categoría Principal */}
-            <Button
-              variant="ghost" 
-              className="w-full p-0 h-auto hover:bg-muted/20"
-              onClick={() => handleCategoryClick(gasto.categoria)}
+            <div
+              className="w-full cursor-pointer hover:bg-muted/20 transition-colors rounded-lg"
+              onClick={(e) => handleCategoryClick(e, gasto.categoria)}
             >
               <div className="flex items-center w-full p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
                 <div className="flex items-center space-x-4 flex-1">
@@ -136,51 +138,87 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
                   </div>
                 </div>
               </div>
-            </Button>
+            </div>
 
             {/* Subcategorías Expandidas */}
             {expandedCategory === gasto.categoria && (
               <div className="ml-12 mt-2 space-y-2">
                 {loadingSubcategorias ? (
-                  <div className="animate-pulse space-y-2">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="flex items-center space-x-4 p-2">
-                        <div className="w-32 h-3 bg-muted/50 rounded"></div>
-                        <div className="flex-1 h-2 bg-muted/50 rounded"></div>
-                        <div className="w-16 h-3 bg-muted/50 rounded"></div>
+                  <div className="space-y-2">
+                    <div className="text-xs text-muted-foreground/50 mb-2 px-2 animate-pulse">
+                      Cargando subcategorías...
+                    </div>
+                    {/* Skeleton de 2 subcategorías */}
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className="flex items-center space-x-4 p-3 rounded-lg bg-muted/10 border border-muted/20 animate-pulse">
+                        {/* Nombre de subcategoría */}
+                        <div className="w-40 h-4 bg-muted/40 rounded"></div>
+                        
+                        {/* Barra de progreso */}
+                        <div className="flex-1">
+                          <div className="w-full bg-muted/30 rounded-full h-1.5">
+                            <div className="h-1.5 rounded-full bg-muted/50 w-3/4"></div>
+                          </div>
+                        </div>
+                        
+                        {/* Información de montos */}
+                        <div className="text-right min-w-[100px] space-y-1">
+                          <div className="w-20 h-3 bg-muted/40 rounded ml-auto"></div>
+                          <div className="w-16 h-2 bg-muted/30 rounded ml-auto"></div>
+                          <div className="w-14 h-2 bg-muted/25 rounded ml-auto"></div>
+                        </div>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  subcategorias.map((sub, subIndex) => (
-                    <div key={subIndex} className="flex items-center space-x-4 p-2 rounded-lg bg-muted/10">
-                      <span className="font-ui text-sm text-foreground w-32 truncate">
-                        {sub.subcategoria}
-                      </span>
-                      <div className="flex-1">
-                        <div className="w-full bg-muted/30 rounded-full h-1.5">
-                          <div 
-                            className="h-1.5 rounded-full bg-primary/70"
-                            style={{ width: `${sub.porcentajeDeLaCategoria}%` }}
-                          />
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-ui text-xs font-semibold text-foreground">
-                          {formatCurrency(sub.totalGasto.toString())}
-                        </span>
-                        <div className="font-ui text-xs text-muted-foreground">
-                          {sub.porcentajeDeLaCategoria.toFixed(1)}% de {gasto.categoria}
-                        </div>
-                      </div>
+                ) : subcategorias.length > 0 ? (
+                  <>
+                    <div className="text-xs text-muted-foreground mb-2 px-2">
+                      Desglose de subcategorías para {gasto.categoria}:
                     </div>
-                  ))
+                    {subcategorias.map((sub, subIndex) => (
+                      <div key={subIndex} className="flex items-center space-x-4 p-3 rounded-lg bg-muted/10 border border-muted/20">
+                        <span className="font-ui text-sm text-foreground w-40 truncate">
+                          {sub.subcategoria}
+                        </span>
+                        <div className="flex-1">
+                          <div className="w-full bg-muted/30 rounded-full h-1.5">
+                            <div 
+                              className="h-1.5 rounded-full bg-primary/70"
+                              style={{ width: `${sub.porcentajeDeLaCategoria}%` }}
+                            />
+                          </div>
+                        </div>
+                        <div className="text-right min-w-[100px]">
+                          <span className="font-ui text-xs font-semibold text-foreground block">
+                            {formatCurrency(sub.totalGasto.toString())}
+                          </span>
+                          <div className="font-ui text-xs text-muted-foreground">
+                            {sub.porcentajeDeLaCategoria.toFixed(1)}% de {gasto.categoria}
+                          </div>
+                          <div className="font-ui text-xs text-muted-foreground/70">
+                            {sub.porcentajeDelTotal.toFixed(1)}% del total
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="text-sm text-muted-foreground px-2 py-3 text-center bg-muted/5 rounded-lg">
+                    No hay subcategorías disponibles para {gasto.categoria}
+                  </div>
                 )}
               </div>
             )}
           </div>
         ))}
       </div>
+
+      {/* Información adicional */}
+      {gastos.length === 0 && !loading && (
+        <div className="text-center text-muted-foreground py-8">
+          No se encontraron gastos para el período seleccionado
+        </div>
+      )}
     </Card>
   );
 };

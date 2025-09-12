@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { BarChart, PieChart } from '@mui/x-charts';
-import { getTicketPromedioYOrdenes, getVentasPorDiaSemana, getMetricasClaveVentas, type VentasPorDia } from '@/utils/reportes/getTicketPromedioYOrdenes';
+import { getVentasPorDiaSemana, getMetricasClaveVentas, type VentasPorDia } from '@/utils/reportes/getTicketPromedioYOrdenes';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { ShoppingCart, Calendar, Percent, TrendingUp } from 'lucide-react';
 
@@ -40,7 +40,7 @@ export const AnalisisVentas = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-ui text-sm text-muted-foreground">Ticket Promedio</p>
-              <p className="font-display text-2xl font-bold text-foreground mt-1">
+              <p className="font-display text-2xl text-foreground mt-1">
                 {metricas ? formatCurrency(metricas.ticketPromedio.toString()) : '$0'}
               </p>
               <p className="font-ui text-xs text-muted-foreground mt-1">
@@ -57,7 +57,7 @@ export const AnalisisVentas = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-ui text-sm text-muted-foreground">Órdenes por Día</p>
-              <p className="font-display text-2xl font-bold text-foreground mt-1">
+              <p className="font-display text-2xl text-foreground mt-1">
                 {metricas ? metricas.ordenesPorDia.toFixed(1) : '0'}
               </p>
               <p className="font-ui text-xs text-muted-foreground mt-1">
@@ -74,7 +74,7 @@ export const AnalisisVentas = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-ui text-sm text-muted-foreground">Total Órdenes</p>
-              <p className="font-display text-2xl font-bold text-foreground mt-1">
+              <p className="font-display text-2xl text-foreground mt-1">
                 {metricas ? metricas.totalOrdenes.toLocaleString() : '0'}
               </p>
               <p className="font-ui text-xs text-muted-foreground mt-1">
@@ -91,7 +91,7 @@ export const AnalisisVentas = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-ui text-sm text-muted-foreground">Ingresos Totales</p>
-              <p className="font-display text-2xl font-bold text-foreground mt-1">
+              <p className="font-display text-2xl text-foreground mt-1">
                 {metricas ? formatCurrency(metricas.totalIngresos.toString()) : '$0'}
               </p>
               <p className="font-ui text-xs text-muted-foreground mt-1">
@@ -124,6 +124,31 @@ export const AnalisisVentas = () => {
                 scaleType: 'band', 
                 data: ventasPorDia.map(v => v.dia.substring(0, 3)) 
               }]}
+              sx={{
+                "& .MuiChartsAxis-root .MuiChartsAxis-line": {
+                  stroke: "var(--muted-foreground)",
+                },
+                "& .MuiChartsAxis-root .MuiChartsAxis-tick": {
+                  stroke: "var(--muted-foreground)",
+                },
+                "& .MuiChartsAxis-root .MuiChartsAxis-tickLabel": {
+                  fill: "var(--foreground)",
+                  fontSize: "0.75rem",
+                },
+                "& .MuiChartsGrid-line": {
+                  stroke: "var(--border)",
+                },
+
+                "& .MuiChartsTooltip-root": {
+                  background: "var(--background)",
+                  color: "var(--foreground)", 
+                  border: "1px solid var(--border)",
+                  fontSize: "0.75rem",
+                },
+                "& .MuiChartsTooltip-mark": {
+                  borderColor: "var(--foreground)",
+                },
+              }}
             />
           )}
         </Card>
@@ -144,6 +169,31 @@ export const AnalisisVentas = () => {
                   }))
                 }
               ]}
+              sx={{
+                "& .MuiChartsAxis-root .MuiChartsAxis-line": {
+                  stroke: "var(--muted-foreground)",
+                },
+                "& .MuiChartsAxis-root .MuiChartsAxis-tick": {
+                  stroke: "var(--muted-foreground)",
+                },
+                "& .MuiChartsAxis-root .MuiChartsAxis-tickLabel": {
+                  fill: "var(--foreground)",
+                  fontSize: "0.75rem",
+                },
+                "& .MuiChartsGrid-line": {
+                  stroke: "var(--border)",
+                },
+
+                "& .MuiChartsTooltip-root": {
+                  background: "var(--background)",
+                  color: "var(--foreground)", 
+                  border: "1px solid var(--border)",
+                  fontSize: "0.75rem",
+                },
+                "& .MuiChartsTooltip-mark": {
+                  borderColor: "var(--foreground)",
+                },
+              }}
             />
           )}
         </Card>

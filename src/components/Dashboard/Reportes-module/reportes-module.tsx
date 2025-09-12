@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ventasPorDia, ventasPorCategoria, metricsComparativas, topProductos } from '@/utils/reportes-blank';
-
 import { ButtonsControlReportes } from './ButtonsControlReportes';
 import { DashboardGeneral } from './Dashboard-general/Dashboard-general';
 import { AnalisisVentas } from './Analisis-ventas/Analisis-ventas';
-import { ProductosGeneral } from './Productos/Productos-general';
-import { FinancieroGeneral } from './Analisis-financiero/Financiero-general';
 import { RentabilidadFlujo } from './Rentabilidad-flujo/Rentabilidad-flujo';
 import { ProyeccionesGeneral } from './Proyecciones/Proyecciones-general';
 
@@ -73,12 +69,6 @@ export function ReportesModule() {
 
         {/* Análisis de Ventas */}
         <AnalisisVentas />
-
-        {/* Productos */}
-        <ProductosGeneral topProductos={topProductos} />
-
-        {/* Financiero */}
-        <FinancieroGeneral />
       </Tabs>
     </div>
   );

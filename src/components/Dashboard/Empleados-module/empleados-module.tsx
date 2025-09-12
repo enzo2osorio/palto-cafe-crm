@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
-import { empleados, cargos, turnos} from '@/utils/empleados-blank';
 import { KPISForEmpleados } from './KPISForEmpleados';
 import { BotonesControlEmpleados } from './BotonesControl';
-import { RegistrarAsistencia } from './Registrar-asistencia';
-import { AgregarEmpleado } from './Agregar-empleado';
 import { FiltroyBusqueda } from '@/components/Reusable/Filtrado-y-busqueda';
 import { TablaEmpleados } from './Tabla-empleados';
 import { getCountDestinatariosByCategoryId, getDestinatariosWithAliasesAndSubcategoriasByCategoryId } from '@/utils/registros/destinatarios-GLOBAL/getDestinatarios';
@@ -188,20 +185,14 @@ export function EmpleadosModule() {
       )}
 
       {/* Formulario de agregar empleado (condicional) */}
-      {showAgregarForm && (
+      {/* {showAgregarForm && (
         <AgregarEmpleado
         cargos={cargos}
         setShowAgregarForm={setShowAgregarForm}
         turnos={turnos}
         />
-      )}
+      )} */}
 
-      {/* Control de asistencia (condicional) */}
-      {showAsistencia && (
-       <RegistrarAsistencia
-        empleados={empleados}
-        />
-      )}
 
       {/* Filtros y búsqueda */}
       {!showAgregarForm && !showAsistencia && (

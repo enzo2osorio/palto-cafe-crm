@@ -9,11 +9,6 @@ import { formatCurrency } from '@/lib/formatCurrency';
 import { TrendingUp, DollarSign, ShoppingCart, Percent } from 'lucide-react';
 import { DistribucionGastosComponent } from './Distribucion-gastos';
 
-interface DashboardGeneralProps {
-  metricsComparativas: any;
-  ventasPorCategoria: any;
-  ventasPorDia: any;
-}
 
 export const DashboardGeneral = () => {
   const [loading, setLoading] = useState(true);
@@ -52,7 +47,7 @@ export const DashboardGeneral = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-ui text-sm text-muted-foreground">Ingresos del Mes</p>
-              <p className="font-display text-2xl font-bold text-foreground mt-1">
+              <p className="font-display text-2xl text-foreground mt-1">
                 {ultimoMargen ? formatCurrency(ultimoMargen.ingresos.toString()) : '$0'}
               </p>
               <p className="font-ui text-xs text-muted-foreground mt-1">
@@ -77,7 +72,7 @@ export const DashboardGeneral = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-ui text-sm text-muted-foreground">Margen Neto</p>
-              <p className="font-display text-2xl font-bold text-foreground mt-1">
+              <p className="font-display text-2xl text-foreground mt-1">
                 {ultimoMargen ? formatCurrency(ultimoMargen.margenNeto.toString()) : '$0'}
               </p>
               <p className="font-ui text-xs text-muted-foreground mt-1">
@@ -99,7 +94,7 @@ export const DashboardGeneral = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-ui text-sm text-muted-foreground">Ticket Promedio</p>
-              <p className="font-display text-2xl font-bold text-foreground mt-1">
+              <p className="font-display text-2xl text-foreground mt-1">
                 {metricasVentas ? formatCurrency(metricasVentas.ticketPromedio.toString()) : '$0'}
               </p>
               <p className="font-ui text-xs text-muted-foreground mt-1">
@@ -116,7 +111,7 @@ export const DashboardGeneral = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-ui text-sm text-muted-foreground">Órdenes por Día</p>
-              <p className="font-display text-2xl font-bold text-foreground mt-1">
+              <p className="font-display text-2xl text-foreground mt-1">
                 {metricasVentas ? metricasVentas.ordenesPorDia.toFixed(1) : '0'}
               </p>
               <p className="font-ui text-xs text-muted-foreground mt-1">

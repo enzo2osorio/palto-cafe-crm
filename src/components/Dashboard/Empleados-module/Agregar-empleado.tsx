@@ -2,12 +2,11 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { CargoEmpleado, TurnoEmpleado } from "@/types/empleados";
 
 interface AgregarEmpleadoProps {
   setShowAgregarForm: (show: boolean) => void;
-  cargos: CargoEmpleado[];
-  turnos: TurnoEmpleado[];
+  cargos: any[];
+  turnos: any[];
 }
 
 export const AgregarEmpleado = ({ setShowAgregarForm, cargos, turnos }: AgregarEmpleadoProps) => {

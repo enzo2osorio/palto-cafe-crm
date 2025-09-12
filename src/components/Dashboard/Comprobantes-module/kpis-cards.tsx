@@ -1,5 +1,4 @@
 import { CustomCard, type CustomCardProps } from '@/components/Reusable/CustomCard'
-import { Calendar, DollarSign, FileText, Zap } from 'lucide-react'
 
 interface KPISCardsForComprobantesProps {
   kpis: CustomCardProps[];

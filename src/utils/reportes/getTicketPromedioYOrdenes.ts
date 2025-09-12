@@ -58,7 +58,7 @@ export const getVentasPorDiaSemana = async (mesesAtras: number = 3) => {
   
   // Iterar por los últimos N meses
   for (let i = -(mesesAtras - 1); i <= 0; i++) {
-    const registros = await getMontosOfMonthsByOffsetAndMovementTypeAndOrigin(i, 'ingreso');
+    const registros = await getMontosOfMonthsByOffsetAndMovementTypeAndOrigin(i, 'ingreso', 'fudo');
     
     if (registros && registros.length > 0) {
       registros.forEach(registro => {

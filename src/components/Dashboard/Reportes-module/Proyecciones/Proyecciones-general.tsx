@@ -219,7 +219,7 @@ export const ProyeccionesGeneral = ({ selectedPeriod }: ProyeccionesGeneralProps
         <Card className="card-warm p-6 border-0">
           <div className="text-center">
             <p className="font-ui text-sm text-muted-foreground mb-2">Próximo Mes</p>
-            <p className="font-display text-3xl font-bold text-foreground mb-1">
+            <p className="font-display text-3xl text-foreground mb-1">
               {proyeccionesFuturas.length > 0 ? 
                 formatCurrency(proyeccionesFuturas[0]?.ingresos.toString() || '0') : 
                 '$0'
@@ -237,7 +237,7 @@ export const ProyeccionesGeneral = ({ selectedPeriod }: ProyeccionesGeneralProps
         <Card className="card-warm p-6 border-0">
           <div className="text-center">
             <p className="font-ui text-sm text-muted-foreground mb-2">Próximo Trimestre</p>
-            <p className="font-display text-3xl font-bold text-foreground mb-1">
+            <p className="font-display text-3xl text-foreground mb-1">
               {proyeccionesFuturas.length >= 3 ? 
                 formatCurrency(proyeccionesFuturas.slice(0, 3).reduce((sum, p) => sum + p.ingresos, 0).toString()) : 
                 '$0'
@@ -255,7 +255,7 @@ export const ProyeccionesGeneral = ({ selectedPeriod }: ProyeccionesGeneralProps
         <Card className="card-warm p-6 border-0">
           <div className="text-center">
             <p className="font-ui text-sm text-muted-foreground mb-2">ROI Proyectado</p>
-            <p className="font-display text-3xl font-bold text-foreground mb-1">
+            <p className="font-display text-3xl text-foreground mb-1">
               185%
             </p>
             <p className="font-ui text-sm text-muted-foreground mb-3">Retorno de inversión</p>
