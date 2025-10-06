@@ -4,7 +4,7 @@ import { BotonesControlEmpleados } from './BotonesControl';
 import { FiltroyBusqueda } from '@/components/Reusable/Filtrado-y-busqueda';
 import { TablaEmpleados } from './Tabla-empleados';
 import { getCountDestinatariosByCategoryId, getDestinatariosWithAliasesAndSubcategoriasByCategoryId } from '@/utils/registros/destinatarios-GLOBAL/getDestinatarios';
-import { getActualMonthlyPayAmountOfEachEmployee, getActualMonthlyPayAmountOfEachEmployeeGivenEmployeeId } from '@/utils/registros/empleados/getTotalAmountOfMonthlyPayment';
+import { getActualMonthlyPayAmountOfEachEmployee } from '@/utils/registros/empleados/getTotalAmountOfMonthlyPayment';
 import { useDestinatarioStore } from '@/lib/store/destinatariosStore';
 import type { CustomCardProps } from '@/components/Reusable/CustomCard';
 import { User } from 'lucide-react';

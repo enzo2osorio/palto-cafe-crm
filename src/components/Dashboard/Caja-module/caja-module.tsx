@@ -21,7 +21,6 @@ export function CajaModule() {
   const [showRegistrarForm, setShowRegistrarForm] = useState(false);
   const [kpisCards, setKpisCards] = useState<KPISProps[]>([]);
   const [loadingKpis, setLoadingKpis] = useState(true);
-  const [loadingGraficos, setLoadingGraficos] = useState(true);
   const [loading6Movements, setLoading6Movements] = useState(true);
   const [ingresosSemanales, setIngresosSemanales] = useState<MovimientosSemanales>();
   const [egresosSemanales, setEgresosSemanales] = useState<MovimientosSemanales>();
@@ -120,7 +119,6 @@ export function CajaModule() {
   // Efecto separado para actualizar gráficos cuando cambia el rango de fechas
   useEffect(() => {
     const fetchingGraficosMovimientosDynamic = async() => {
-      setLoadingGraficos(true);
       
       // Obtener las etiquetas para el período seleccionado
       const dateRange = getDateRangeByType(selectedDateRange);
@@ -148,7 +146,6 @@ export function CajaModule() {
         endISO: dateRange.endISO
       });
       
-      setLoadingGraficos(false);
     }
 
     fetchingGraficosMovimientosDynamic();
