@@ -1,6 +1,5 @@
 import { KPISCardsForInicio } from './KPISCardsForInicio';
 import { GraficoEgresosMensuales } from './Grafico-egresos-mensuales';
-import { GraficosCirculares } from './Graficos-circulares';
 import { useEffect, useState } from 'react';
 import type { User } from '@/types/authSupabase';
 import { fetchingAuthUser } from '@/lib/fetchUser';
@@ -9,7 +8,7 @@ import {  getDailyIngresosToOwners } from '@/utils/registros/getDailyRegistros';
 import type { KPISProps } from '@/types/inicio';
 import { DollarSign } from 'lucide-react';
 import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
-import { getMonthlyVentasToOwners } from '@/utils/registros/registrosMensuales/getMonthlyIngresosToOwners';
+import { getMonthlyVentasToOwners_OPTIMIZED } from '@/utils/registros/registrosMensuales/getMonthlyIngresosToOwners_OPTIMIZED';
 import { GraficoIngresosMensuales } from './Grafico-ingresos-mensuales';
 import { formatCurrency } from '@/lib/formatCurrency';
 
@@ -81,8 +80,8 @@ export function InicioModule() {
     const fetchDataForGraphic = async () => {
       const results = await Promise.all(
         [
-          await getMonthlyVentasToOwners("egreso"),
-          await getMonthlyVentasToOwners("ingreso")
+          await getMonthlyVentasToOwners_OPTIMIZED("egreso"),
+          await getMonthlyVentasToOwners_OPTIMIZED("ingreso")
         ]
       )
 
@@ -129,11 +128,6 @@ export function InicioModule() {
       <GraficoIngresosMensuales
       data={dataGraphiIngreso}
       />
-
-
-
-      {/* Gráficos circulares de métricas */}
-      <GraficosCirculares />
     </div>
   );
 }

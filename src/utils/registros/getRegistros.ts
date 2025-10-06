@@ -94,29 +94,22 @@ export const getMontosOfMonthsByOffsetAndMovementTypeAndOrigin = async (
 ) => {
   const { startISO, endExclusiveISO } = getLastMonth({ offset });
 
-  let query = supabase
-    .from('registros')
-    .select('tipo_movimiento, monto, fecha, destinatario_id, metodo_pago_id, origen, cuenta_contable_id, created_at')
-    .order('created_at', { ascending: false })
-    .gte('fecha', startISO)
-    .lt('fecha', endExclusiveISO);
-
-  if (movementType && movementType.length > 0) {
-    query = query.eq('tipo_movimiento', movementType);
-  }
-
-  if (origin && origin.length > 0) {
-    query = query.eq('origen', origin);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching registros:', error);
-    return [];
-  }
-
-  return data ?? [];
+  // Usar el helper de paginación optimizado
+  const { getAllRegistros } = await import('./paginationHelper');
+  
+  return getAllRegistros(
+    {
+      tipoMovimiento: movementType,
+      fechaDesde: startISO,
+      fechaHasta: endExclusiveISO,
+      origen: origin
+    },
+    {
+      campos: 'tipo_movimiento, monto, fecha, destinatario_id, metodo_pago_id, origen, cuenta_contable_id, created_at',
+      batchSize: 1000,
+      logProgress: false
+    }
+  );
 };
 
 export const getRegistrosWithDestinatariosAndMetodoPagoAndCuentaContable = async (limit? : number, movementType?: string) : Promise<LastRegistrosProps[]> => {

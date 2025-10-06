@@ -215,58 +215,6 @@ export const ProyeccionesGeneral = ({ selectedPeriod }: ProyeccionesGeneralProps
           </table>
         </div>
       </Card>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="card-warm p-6 border-0">
-          <div className="text-center">
-            <p className="font-ui text-sm text-muted-foreground mb-2">Próximo Mes</p>
-            <p className="font-display text-3xl text-foreground mb-1">
-              {proyeccionesFuturas.length > 0 ? 
-                formatCurrency(proyeccionesFuturas[0]?.ingresos.toString() || '0') : 
-                '$0'
-              }
-            </p>
-            <p className="font-ui text-sm text-muted-foreground mb-3">Ingresos proyectados</p>
-            <div className="flex items-center justify-center">
-              <span className="text-xs font-semibold text-success px-2 py-1 bg-success/10 rounded-full">
-                +10.4%
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="card-warm p-6 border-0">
-          <div className="text-center">
-            <p className="font-ui text-sm text-muted-foreground mb-2">Próximo Trimestre</p>
-            <p className="font-display text-3xl text-foreground mb-1">
-              {proyeccionesFuturas.length >= 3 ? 
-                formatCurrency(proyeccionesFuturas.slice(0, 3).reduce((sum, p) => sum + p.ingresos, 0).toString()) : 
-                '$0'
-              }
-            </p>
-            <p className="font-ui text-sm text-muted-foreground mb-3">Ingresos estimados</p>
-            <div className="flex items-center justify-center">
-              <span className="text-xs font-semibold text-success px-2 py-1 bg-success/10 rounded-full">
-                +12.8%
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="card-warm p-6 border-0">
-          <div className="text-center">
-            <p className="font-ui text-sm text-muted-foreground mb-2">ROI Proyectado</p>
-            <p className="font-display text-3xl text-foreground mb-1">
-              185%
-            </p>
-            <p className="font-ui text-sm text-muted-foreground mb-3">Retorno de inversión</p>
-            <div className="flex items-center justify-center">
-              <span className="text-xs font-semibold text-warning px-2 py-1 bg-warning/10 rounded-full">
-                +5.2%
-              </span>
-            </div>
-          </div>
-        </Card>
-      </div>
     </TabsContent>
   );
 };

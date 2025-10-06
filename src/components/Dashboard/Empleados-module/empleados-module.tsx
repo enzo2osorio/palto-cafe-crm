@@ -49,7 +49,7 @@ export function EmpleadosModule() {
           LeftTop: User,
           titleForBadge: 'Total',
           titleForCard: `${formatCurrency(total.toString())}`,
-          subtitleForCard: `Total de pagos`,
+          subtitleForCard: `Total de pagos del mes`,
           miniDescriptionForCard: 'Incluye todos los pagos registrados'
         };
 

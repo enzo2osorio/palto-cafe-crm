@@ -1,4 +1,3 @@
-import supabase from "@/lib/supabaseClient";
 import { getDestinatariosByCategoryId } from "../destinatarios-GLOBAL/getDestinatarios";
 import { getLastMonth } from "@/utils/date/getLastMonth";
 
@@ -16,12 +15,24 @@ export const getActualMonthlyPayAmountOfEachEmployee = async () => {
 
     const empleadosStructure = await Promise.all(
       empleados.map(async (empleado) => {
-        const { data } = await supabase
-          .from("registros")
-          .select("id, destinatario_id, monto")
-          .eq("destinatario_id", empleado.id)
-          .gte('fecha', startISO)
-          .lt('fecha', endExclusiveISO);
+        // Usar paginación optimizada
+        const { getAllRegistros } = await import('../paginationHelper');
+        
+        const data = await getAllRegistros(
+          {
+            fechaDesde: startISO,
+            fechaHasta: endExclusiveISO,
+            destinatarioIds: [empleado.id]
+          },
+          {
+            campos: 'id, destinatario_id, monto',
+            batchSize: 1000,
+            logProgress: false
+          }
+        ).catch(error => {
+          console.error('Error fetching empleado registros:', error);
+          return [];
+        });
 
         const individualPayment = data?.reduce((sum, payment) => sum + payment.monto, 0);
 
@@ -54,12 +65,24 @@ export const getActualMonthlyPayAmountOfEachEmployeeGivenEmployeeId = async (id:
 
     const { startISO, endExclusiveISO} = getLastMonth()
 
-    const { data } = await supabase
-      .from("registros")
-      .select("id, monto")
-      .eq("destinatario_id", id)
-      .gte('fecha', startISO)
-      .lt('fecha', endExclusiveISO);
+    // Usar paginación optimizada
+    const { getAllRegistros } = await import('../paginationHelper');
+    
+    const data = await getAllRegistros(
+      {
+        fechaDesde: startISO,
+        fechaHasta: endExclusiveISO,
+        destinatarioIds: [id]
+      },
+      {
+        campos: 'id, monto',
+        batchSize: 1000,
+        logProgress: false
+      }
+    ).catch(error => {
+      console.error('Error fetching empleado registros:', error);
+      return [];
+    });
 
     const individualPayment = data?.reduce((sum, payment) => sum + payment.monto, 0);
 

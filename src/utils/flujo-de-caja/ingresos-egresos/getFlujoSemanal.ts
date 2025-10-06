@@ -1,4 +1,3 @@
-import supabase from '@/lib/supabaseClient'
 import type { MovimientosSemanales } from '@/types/movimientosSemanales'
 import { getWeekly } from "@/utils/date/getWeekly"
 
@@ -15,15 +14,26 @@ export const getMovimientosSemanales = async (tipo_movimiento: string, weeks = 7
     const startISO = startWeek.startISO
     const endISO = endNextWeek.startISO
 
-    const { data : rows, error } = await supabase
-      .from('registros')
-      .select('monto, tipo_movimiento, fecha')
-      .eq('tipo_movimiento', tipo_movimiento)
-      .gte('fecha', startISO)
-      .lt('fecha', endISO)
+    // Usar paginación optimizada
+    const { getAllRegistros } = await import('../../registros/paginationHelper');
+    
+    const rows = await getAllRegistros(
+      {
+        tipoMovimiento: tipo_movimiento,
+        fechaDesde: startISO,
+        fechaHasta: endISO
+      },
+      {
+        campos: 'monto, tipo_movimiento, fecha',
+        batchSize: 1000,
+        logProgress: false
+      }
+    ).catch(error => {
+      console.error('Error fetching weekly registros:', error);
+      return [];
+    });
 
-    if (error) {
-      console.error('Error fetching weekly registros:', error)
+    if (!rows || rows.length === 0) {
       return { labels: [], buckets: [], raw: [], startISO, endISO }
     }
 
