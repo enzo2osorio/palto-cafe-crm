@@ -1,12 +1,14 @@
 import { Card } from '@/components/ui/card';
-import { getLast6Months } from '@/utils/date/getLast6Months';
 import { LineChart } from '@mui/x-charts';
 import type { GraficoVentasMensualesProps } from './Grafico-egresos-mensuales';
 
 const margin = { right: 24 };
 
-export const GraficoIngresosMensuales = ({ data }: GraficoVentasMensualesProps) => {
- const xLabels : string[] = getLast6Months();
+export interface GraficoIngresosMensualesProps extends GraficoVentasMensualesProps {
+  labels?: string[];
+}
+
+export const GraficoIngresosMensuales = ({ data, labels }: GraficoIngresosMensualesProps) => {
 
   return (
     <Card className="card-warm p-6 border-0">
@@ -22,7 +24,7 @@ export const GraficoIngresosMensuales = ({ data }: GraficoVentasMensualesProps) 
                   data: owner.monthlyIngresos,
                   label: owner.owner,
                 }))}
-                xAxis={[{ scaleType: 'point', data: xLabels }]}
+                xAxis={[{ scaleType: 'point', data: labels || [] }]}
                 yAxis={[{ width: 50 }]}
                 margin={margin}
                 sx={{

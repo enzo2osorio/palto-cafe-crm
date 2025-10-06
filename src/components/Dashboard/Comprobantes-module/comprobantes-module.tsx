@@ -1,30 +1,54 @@
 import { useEffect, useState } from 'react';
-import { Upload, Search, Filter, FileText, Building, Zap, CheckCircle, Calendar, DollarSign } from 'lucide-react';
+import { Upload, Zap, CheckCircle, Calendar, DollarSign, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { comprobantes, proveedores } from '@/utils/comprobantes-blank';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { KPISCardsForComprobantes } from './kpis-cards';
-import { getRegistrosOfToday, getRegistrosOfYesterday, getRegistrosWithDestinatariosAndMetodoPagoAndCuentaContable, type LastRegistrosProps } from '@/utils/registros/getRegistros';
+import { getRegistrosOfToday, getRegistrosOfYesterday } from '@/utils/registros/getRegistros';
 import type { CustomCardProps } from '@/components/Reusable/CustomCard';
 import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
 import { TablaComprobantesSkeleton } from '../Skeletons/TablaComprobantesSkeleton';
+import { FiltradoComprobantes } from '@/components/Reusable/FiltradoComprobantes';
+import { PaginationRegistros } from '@/components/Reusable/PaginationRegistros';
+import { useRegistrosStore } from '@/lib/store/registrosStore';
+import { getRegistrosWithFilters } from '@/utils/registros/getRegistrosWithFilters';
 
 export function ComprobantesModule() {
   const [activeTab, setActiveTab] = useState('lista');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProveedor, setSelectedProveedor] = useState('todos');
   const [uploading, setUploading] = useState(false);
   const [aiProcessing, setAiProcessing] = useState(false);
   const [kpisLoading, setKpisLoading] = useState(true);
   const [kpiFormat, setKpiFormat] = useState<CustomCardProps[]>([]);
-  const [last6Movements, setLast6Movements] = useState<LastRegistrosProps[]>([]);
-  const [loading6Movements, setLoading6Movements] = useState(true);
+
+  // Usar el store de registros para el estado global
+  const {
+    registros,
+    loading,
+    totalCount,
+    filters,
+    pagination,
+    setRegistros,
+    setTotalCount,
+    setLoading,
+    setPagination
+  } = useRegistrosStore();
+
+  // Cargar registros iniciales
+  const loadRegistros = async () => {
+    setLoading(true);
+    try {
+      const { data, count } = await getRegistrosWithFilters(filters, pagination);
+      setRegistros(data);
+      setTotalCount(count);
+    } catch (error) {
+      console.error('Error cargando registros:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-
     const fetchRegistrosOfToday = async () => {
       setKpisLoading(true);
       const [registrosToday, registrosYesterday] = await Promise.all([
@@ -34,8 +58,8 @@ export function ComprobantesModule() {
 
       const montoDiario = registrosToday.reduce((sum, r) => sum + r.monto, 0);
       const montoYesterday = registrosYesterday.reduce((sum, r) => sum + r.monto, 0);
-      const fromBot = registrosToday.filter(r => r.origen === 'bot').map(r => r.monto).length;
-      const fromFudo = registrosToday.filter(r => r.origen === 'fudo').map(r => r.monto).length;
+      const fromBot = registrosToday.filter(r => r.origen === 'bot').length;
+      const fromFudo = registrosToday.filter(r => r.origen === 'fudo').length;
 
       const kpiFormat : CustomCardProps[] = [
         {
@@ -55,14 +79,14 @@ export function ComprobantesModule() {
         {
         LeftTop : FileText,
         titleForBadge: 'Desde el bot',
-        titleForCard: `${fromBot}`, // Example total, replace with actual prop if needed
+        titleForCard: `${fromBot}`,
         subtitleForCard: 'Total Comprobantes desde el bot',
         miniDescriptionForCard: 'En el sistema',
       },
       {
         LeftTop : FileText,
         titleForBadge: 'Desde el fudo',
-        titleForCard: `${fromFudo}`, // Example total, replace with actual prop if needed
+        titleForCard: `${fromFudo}`,
         subtitleForCard: 'Total Comprobantes desde el fudo',
         miniDescriptionForCard: 'En el sistema',
       },
@@ -73,22 +97,14 @@ export function ComprobantesModule() {
       setKpisLoading(false);
     }
 
-    const fetchRegistrosHistoricos = async () => {
-      setLoading6Movements(true);
-      const last6Registros = await getRegistrosWithDestinatariosAndMetodoPagoAndCuentaContable(6);
-
-      if(!last6Registros){
-        console.warn('No se encontraron movimientos');
-        return []
-      }
-      setLast6Movements(last6Registros);
-      setLoading6Movements(false);
-    }
-
     fetchRegistrosOfToday();
-    fetchRegistrosHistoricos();
-
+    loadRegistros();
   }, [])
+
+  // Recargar cuando cambie la paginación
+  useEffect(() => {
+    loadRegistros();
+  }, [pagination])
 
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,38 +162,11 @@ export function ComprobantesModule() {
         </TabsList>
 
         <TabsContent value="lista" className="space-y-6">
-          {/* Filtros y búsqueda */}
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <div className="flex items-center space-x-4 flex-1">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar comprobantes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-input-background border-0 rounded-2xl font-ui"
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-muted-foreground" />
-                <select
-                  value={selectedProveedor}
-                  onChange={(e) => setSelectedProveedor(e.target.value)}
-                  className="bg-input-background border-0 rounded-2xl px-4 py-2 font-ui font-medium text-foreground"
-                >
-                  {proveedores.map((proveedor) => (
-                    <option key={proveedor} value={proveedor}>
-                      {proveedor.charAt(0).toUpperCase() + proveedor.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
+          {/* Filtros avanzados */}
+          <FiltradoComprobantes onFiltersChange={loadRegistros} />
 
           {/* Tabla de comprobantes */}
-          {last6Movements.length === 0 || loading6Movements ? (
+          {loading ? (
             <TablaComprobantesSkeleton/>
           ) : (
             <Card className="card-warm border-0 overflow-hidden">
@@ -194,42 +183,73 @@ export function ComprobantesModule() {
                   </tr>
                 </thead>
                 <tbody>
-                  {last6Movements.map((comprobante) => (
-                    <tr key={comprobante.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                      <td className="p-4">
-                        <div className="flex items-center space-x-2">
-                          <Building className="w-4 h-4 text-muted-foreground" />
-                          <p className="font-ui text-foreground">{comprobante.destinatario}</p>
-                        </div>
+                  {registros.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                        No se encontraron comprobantes con los filtros aplicados
                       </td>
-                      <td className="p-4">
-                        <Badge className="bg-primary/30 text-primary text-base border-primary/20 font-ui">
-                          {comprobante.categoria}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <p className="bg-primary/10 text-primary text-base lg:max-w-[80%] border-primary/20 font-ui p-1 px-2 rounded-lg text-center">
-                          {comprobante.subcategoria}
-                        </p>
-                      </td>
-                      <td className="p-4">
-                        <p className="font-ui font-semibold text-foreground">{formatCurrency(comprobante.monto.toString())}</p>
-                      </td>
-                      <td className="p-4">
-                        <p className="font-ui text-foreground">{new Date(comprobante.fecha).toLocaleDateString()}</p>
-                        <p className="font-ui text-sm text-muted-foreground">Subido: {new Date(comprobante.created_at).toLocaleDateString()}</p>
-                      </td>
-                      <td className="p-4">
-                        <p className="font-ui font-semibold text-foreground lg:max-w-[80%] text-pretty">{comprobante.cuentaContable}</p>
-                      </td>
-                      
                     </tr>
-                  ))}
+                  ) : (
+                    registros.map((registro) => (
+                      <tr key={registro.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                        <td className="p-4">
+                          <div className="flex items-center space-x-2">
+                            <FileText className="w-4 h-4 text-muted-foreground" />
+                            <p className="font-ui text-foreground">
+                              {registro.destinatarios?.[0]?.name || 'N/A'}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <Badge 
+                            className={`text-base border font-ui ${
+                              registro.tipo_movimiento === 'ingreso' 
+                                ? 'bg-green-100 text-green-800 border-green-200' 
+                                : 'bg-red-100 text-red-800 border-red-200'
+                            }`}
+                          >
+                            {registro.tipo_movimiento}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <p className="bg-primary/10 text-primary text-base lg:max-w-[80%] border-primary/20 font-ui p-1 px-2 rounded-lg text-center">
+                            {registro.origen}
+                          </p>
+                        </td>
+                        <td className="p-4">
+                          <p className="font-ui font-semibold text-foreground">
+                            {formatCurrency(registro.monto.toString())}
+                          </p>
+                        </td>
+                        <td className="p-4">
+                          <p className="font-ui text-foreground">
+                            {new Date(registro.fecha).toLocaleDateString()}
+                          </p>
+                          <p className="font-ui text-sm text-muted-foreground">
+                            Subido: {new Date(registro.created_at).toLocaleDateString()}
+                          </p>
+                        </td>
+                        <td className="p-4">
+                          <p className="font-ui font-semibold text-foreground lg:max-w-[80%] text-pretty">
+                            {registro.cuenta_contable?.[0]?.name || 'N/A'}
+                          </p>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </Card>
           )}
+
+          {/* Paginación */}
+          <PaginationRegistros
+            pagination={pagination}
+            setPagination={setPagination}
+            totalCount={totalCount}
+            loading={loading}
+          />
         </TabsContent>
 
         <TabsContent value="subir" className="space-y-6">
@@ -340,9 +360,11 @@ export function ComprobantesModule() {
                 <div className="bg-muted/50 rounded-xl p-4">
                   <h4 className="font-ui font-semibold text-foreground mb-2">Últimos procesados</h4>
                   <div className="space-y-2">
-                    {comprobantes.slice(0, 3).map((comp) => (
-                      <div key={comp.id} className="flex justify-between items-center">
-                        <span className="font-ui text-sm text-foreground">{comp.numero}</span>
+                    {registros.slice(0, 3).map((registro) => (
+                      <div key={registro.id} className="flex justify-between items-center">
+                        <span className="font-ui text-sm text-foreground">
+                          {registro.destinatarios?.[0]?.name || 'Registro'}
+                        </span>
                         <Badge className="bg-success/10 text-success border-success/20 text-xs">
                           <CheckCircle className="w-3 h-3 mr-1" />
                           Procesado

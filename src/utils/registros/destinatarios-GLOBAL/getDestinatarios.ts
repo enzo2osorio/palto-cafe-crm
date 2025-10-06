@@ -3,6 +3,8 @@ import { getSubcategoryIdByName } from "../subcategorias/getSubcategoryIdByName"
 import type { PaginationForDestinatarios } from "@/types/pagination";
 import { getAliasesOfDestinatarios } from "../aliases/getAliases";
 import { getSubcategoryNameOfDestinatario } from "../subcategorias/getSubcategoryOfDestinatario";
+import { getLastMonth } from "@/utils/date/getLastMonth";
+import type { DestinatariosProps } from "@/types/destinatarios";
 
 
 // obtener todos los destinatarios de una categoria
@@ -128,7 +130,7 @@ export const getDestinatariosWithAliasesAndSubcategoriasByCategoryId = async (ca
             return null;
         }
 
-        const proovedorWithSubcategory = await Promise.all(destinatarios.map(async (destinatario) => {
+        let destinatarioWithSubcategory= await Promise.all(destinatarios.map(async (destinatario) => {
             const subcategory = destinatario.subcategory_id ? await getSubcategoryNameOfDestinatario(destinatario.subcategory_id) : null;
             return {
                 ...destinatario,
@@ -136,8 +138,7 @@ export const getDestinatariosWithAliasesAndSubcategoriasByCategoryId = async (ca
             };
         }));
 
-
-        const proovedorWithAliasesAndSubcategory = await Promise.all(proovedorWithSubcategory.map(async (destinatario) => {
+        let destinatarioWithAliasesAndSubcategory : DestinatariosProps[]  = await Promise.all(destinatarioWithSubcategory.map(async (destinatario) => {
             const aliases = await getAliasesOfDestinatarios(destinatario.id);
             return {
                 ...destinatario,
@@ -145,12 +146,43 @@ export const getDestinatariosWithAliasesAndSubcategoriasByCategoryId = async (ca
             };
         }));
 
-        if (!proovedorWithAliasesAndSubcategory) {
+        if (!destinatarioWithAliasesAndSubcategory) {
             console.error('No se encontró ningún alias de destinatario');
             return null;
         }
 
-        return proovedorWithAliasesAndSubcategory;
+         if (categoryId === import.meta.env.VITE_CATEGORIA_EMPLEADOS_UUID) {
+            const { startISO, endExclusiveISO } = getLastMonth();
+            destinatarioWithAliasesAndSubcategory = await Promise.all(
+                destinatarioWithAliasesAndSubcategory.map(async (destinatario) => {
+                    try {
+                        const { data, error } = await supabase
+                            .from('registros')
+                            .select('monto')
+                            .eq('destinatario_id', destinatario.id)
+                            .gte('fecha', startISO)
+                            .lt('fecha', endExclusiveISO);
+
+                        if (error) {
+                            console.error(`Error fetching registros for empleado ${destinatario.name}:`, error);
+                            return { ...destinatario, individualPayment: 0 };
+                        }
+
+                        const totalPayment = data ? data.reduce((sum, record) => sum + (record.monto || 0), 0) : 0;
+                        
+                        return {
+                            ...destinatario,
+                            individualPayment: totalPayment
+                        };
+                    } catch (err) {
+                        console.error(`Error processing empleado ${destinatario.name}:`, err);
+                        return { ...destinatario, individualPayment: 0 };
+                    }
+                })
+            );
+        }
+
+        return destinatarioWithAliasesAndSubcategory;
 
         
     } catch (error) {

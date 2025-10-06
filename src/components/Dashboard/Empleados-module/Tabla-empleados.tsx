@@ -3,13 +3,110 @@ import { Card } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/formatCurrency";
 import { useDestinatarioStore } from "@/lib/store/destinatariosStore";
 import { Edit3, Trash2 } from "lucide-react"
-
+import { useState } from 'react'
+import { ConfirmDeleteModal } from '@/components/Reusable/ConfirmDeleteModal'
+import { EditDestinatarioModal } from '@/components/Reusable/EditDestinatarioModal'
+import { deleteDestinatarioById } from '@/utils/registros/destinatarios-GLOBAL/deleteDestinatario'
+import { getDestinatariosWithAliasesAndSubcategoriasByCategoryId } from '@/utils/registros/destinatarios-GLOBAL/getDestinatarios'
 
 export const TablaEmpleados = () => {
-  const { destinatarios } = useDestinatarioStore();
+  const { destinatarios, setDestinatarios, pagination, searchTerm, selectedRubro, setLoading } = useDestinatarioStore()
+  
+  // Estados para modales
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [selectedEmpleado, setSelectedEmpleado] = useState<any>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const CATEGORIA_EMPLEADOS = import.meta.env.VITE_CATEGORIA_EMPLEADOS_UUID as string
+
+  // Función para abrir modal de eliminar
+  const handleDelete = (empleado: any) => {
+    setSelectedEmpleado(empleado)
+    setShowDeleteModal(true)
+  }
+
+  // Función para abrir modal de editar
+  const handleEdit = (empleado: any) => {
+    setSelectedEmpleado(empleado)
+    setShowEditModal(true)
+  }
+
+  // Función para confirmar eliminación
+  const confirmDelete = async () => {
+    if (!selectedEmpleado) return
+
+    setIsDeleting(true)
+    try {
+      const success = await deleteDestinatarioById(selectedEmpleado.id)
+      if (success) {
+        // Recargar la lista de empleados
+        await refreshEmpleados()
+        setShowDeleteModal(false)
+        setSelectedEmpleado(null)
+      }
+    } catch (error) {
+      console.error('Error eliminando empleado:', error)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // Función para refrescar lista después de cambios
+  const refreshEmpleados = async () => {
+    setLoading(true)
+    try {
+      const empleados = await getDestinatariosWithAliasesAndSubcategoriasByCategoryId(
+        CATEGORIA_EMPLEADOS, 
+        pagination, 
+        searchTerm, 
+        selectedRubro
+      )
+      if (empleados) {
+        setDestinatarios(empleados)
+      }
+    } catch (error) {
+      console.error('Error recargando empleados:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Función para manejar éxito en edición
+  const handleEditSuccess = async () => {
+    await refreshEmpleados()
+    setShowEditModal(false)
+    setSelectedEmpleado(null)
+  }
 
   return (
-    <Card className="card-warm border-0 overflow-hidden">
+    <>
+      {/* Modales */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setSelectedEmpleado(null)
+        }}
+        onConfirm={confirmDelete}
+        destinatarioName={selectedEmpleado?.name || ''}
+        isLoading={isDeleting}
+        type="empleado"
+      />
+
+      <EditDestinatarioModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setSelectedEmpleado(null)
+        }}
+        onSuccess={handleEditSuccess}
+        destinatarioId={selectedEmpleado?.id || ''}
+        categoryId={CATEGORIA_EMPLEADOS}
+        type="empleado"
+      />
+
+      <Card className="card-warm border-0 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-muted/50">
@@ -46,10 +143,20 @@ export const TablaEmpleados = () => {
                     </td>
                     <td className="p-4">
                       <div className="flex space-x-2">
-                        <Button size="sm" variant="ghost" className="w-8 h-8 p-0 cursor-pointer">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="w-8 h-8 p-0 cursor-pointer"
+                          onClick={() => handleEdit(empleado)}
+                        >
                           <Edit3 className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" className="w-8 h-8 p-0 text-destructive cursor-pointer">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="w-8 h-8 p-0 text-destructive cursor-pointer"
+                          onClick={() => handleDelete(empleado)}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -60,5 +167,6 @@ export const TablaEmpleados = () => {
             </table>
           </div>
         </Card>
+    </>
   )
 }

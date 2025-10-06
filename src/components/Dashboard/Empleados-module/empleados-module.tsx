@@ -63,23 +63,7 @@ export function EmpleadosModule() {
           console.error('No se encontraron empleados');
           return null;
         }
-
-        const empleadosWithPayments = await Promise.all(
-          empleados.map(async empleado => {
-            const individualPayment = await getActualMonthlyPayAmountOfEachEmployeeGivenEmployeeId(empleado.id);
-            return {
-              ...empleado,
-              individualPayment: individualPayment ?? 0,
-            };
-          })
-        );
-
-        if (!empleadosWithPayments) {
-          console.error('No se encontraron empleados con pagos');
-          return null;
-        }
-
-        return empleadosWithPayments
+        return empleados;
       }
 
     const firstFetch = async () => {
@@ -134,12 +118,12 @@ export function EmpleadosModule() {
    useEffect(() => {
     const updatingEmpleados = async () => {
       setLoading(true);
-      const proveedores = await getDestinatariosWithAliasesAndSubcategoriasByCategoryId(import.meta.env.VITE_CATEGORIA_EMPLEADOS_UUID as string, pagination, searchTerm, selectedRubro);
-      if (!proveedores) {
-        console.error('No se encontraron proveedores');
+      const empleados = await getDestinatariosWithAliasesAndSubcategoriasByCategoryId(import.meta.env.VITE_CATEGORIA_EMPLEADOS_UUID as string, pagination, searchTerm, selectedRubro);
+      if (!empleados) {
+        console.error('No se encontraron empleados');
         return null;
       }
-      setDestinatarios(proveedores);
+      setDestinatarios(empleados);
       setLoading(false);
     }
     updatingEmpleados();

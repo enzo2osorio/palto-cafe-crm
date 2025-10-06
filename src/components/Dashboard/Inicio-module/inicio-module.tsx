@@ -8,9 +8,12 @@ import {  getDailyIngresosToOwners } from '@/utils/registros/getDailyRegistros';
 import type { KPISProps } from '@/types/inicio';
 import { DollarSign } from 'lucide-react';
 import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
-import { getMonthlyVentasToOwners_OPTIMIZED } from '@/utils/registros/registrosMensuales/getMonthlyIngresosToOwners_OPTIMIZED';
+import { getDataToOwnersByDateRange } from '@/utils/registros/registrosMensuales/getDataToOwnersByDateRange';
 import { GraficoIngresosMensuales } from './Grafico-ingresos-mensuales';
 import { formatCurrency } from '@/lib/formatCurrency';
+import { DateRangeSelector } from '@/components/Reusable/DateRangeSelector';
+import type { DateRangeType } from '@/utils/date/getDateRangeByType';
+import { getDateRangeByType } from '@/utils/date/getDateRangeByType';
 
 export interface GraphicProps{
   owner : string;
@@ -25,6 +28,8 @@ export function InicioModule() {
   const [kpiData, setKPIData] = useState<KPISProps[]>([]);
   const [dataGraphiIngreso, setDataGraphicIngreso] = useState<GraphicProps[]>();
   const [dataGraphiEgreso, setDataGraphicEgreso] = useState<GraphicProps[]>();
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRangeType>('mensual');
+  const [dateLabels, setDateLabels] = useState<string[]>([]);
 
   useEffect(() => {
     fetchingAuthUser({ setUser, setLoading });
@@ -77,23 +82,31 @@ export function InicioModule() {
       setKPISLoading(false)
     }
 
-    const fetchDataForGraphic = async () => {
-      const results = await Promise.all(
-        [
-          await getMonthlyVentasToOwners_OPTIMIZED("egreso"),
-          await getMonthlyVentasToOwners_OPTIMIZED("ingreso")
-        ]
-      )
+    fetchInformationForCards();
+
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return;
+    
+    async function fetchDataForGraphic() {
+      // Obtener las etiquetas para el período seleccionado
+      const dateRange = getDateRangeByType(selectedDateRange);
+      setDateLabels(dateRange.labels);
+
+      const results = await Promise.all([
+        getDataToOwnersByDateRange("egreso", selectedDateRange),
+        getDataToOwnersByDateRange("ingreso", selectedDateRange)
+      ])
 
       const [egresos, ingresos] = results
       
       setDataGraphicIngreso(ingresos);
       setDataGraphicEgreso(egresos)
     }
-    fetchInformationForCards();
-    fetchDataForGraphic();
 
-  }, [user])
+    fetchDataForGraphic();
+  }, [user, selectedDateRange])
 
   if(loading){
     return <InicioSkeleton/>
@@ -102,11 +115,14 @@ export function InicioModule() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-2">
-        <p className="font-ui text-lg text-muted-foreground tracking-wide">Inicio</p>
-        <h1 className="font-display text-5xl text-foreground">
-          HOLA, <span className="text-primary">{user?.nombre}</span>
-        </h1>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <p className="font-ui text-lg text-muted-foreground tracking-wide">Inicio</p>
+          <h1 className="font-display text-5xl text-foreground">
+            HOLA, <span className="text-primary">{user?.nombre}</span>
+          </h1>
+        </div>
+      
       </div>
 
       {/* KPI Cards */}
@@ -119,14 +135,24 @@ export function InicioModule() {
           />
         )
       }
+
+      {/* Date Range Selector */}
+        <div className="flex justify-end">
+          <DateRangeSelector
+            value={selectedDateRange}
+            onValueChange={setSelectedDateRange}
+          />
+        </div>
       
-      {/* Gráfico de ventas diarias */}
+      {/* Gráficos con rangos de fechas dinámicos */}
       <GraficoEgresosMensuales
-      data={dataGraphiEgreso}
+        data={dataGraphiEgreso}
+        labels={dateLabels}
       />
 
       <GraficoIngresosMensuales
-      data={dataGraphiIngreso}
+        data={dataGraphiIngreso}
+        labels={dateLabels}
       />
     </div>
   );

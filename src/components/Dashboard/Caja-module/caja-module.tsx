@@ -7,12 +7,15 @@ import type { KPISProps } from '@/types/inicio';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { DollarSign, TrendingDown, TrendingUp } from 'lucide-react';
 import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
-import { getMovimientosSemanales } from '@/utils/flujo-de-caja/ingresos-egresos/getFlujoSemanal';
 import type { MovimientosSemanales } from '@/types/movimientosSemanales';
 import { GraficoIngresosSemanales } from './Grafico-ingresos-semanales';
 import { GraficoEgresosSemanales } from './Graficos-egresos-semanales';
 import { getRegistrosWithDestinatariosAndMetodoPagoAndCuentaContable, type LastRegistrosProps } from '@/utils/registros/getRegistros';
 import { HistorialSkeleton } from '../Skeletons/HistorialSkeleton';
+import { DateRangeSelector } from '@/components/Reusable/DateRangeSelector';
+import type { DateRangeType } from '@/utils/date/getDateRangeByType';
+import { getDateRangeByType } from '@/utils/date/getDateRangeByType';
+import { getGlobalDataByDateRange } from '@/utils/flujo-de-caja/ingresos-egresos/getGlobalDataByDateRange';
 
 export function CajaModule() {
   const [showRegistrarForm, setShowRegistrarForm] = useState(false);
@@ -23,7 +26,8 @@ export function CajaModule() {
   const [ingresosSemanales, setIngresosSemanales] = useState<MovimientosSemanales>();
   const [egresosSemanales, setEgresosSemanales] = useState<MovimientosSemanales>();
   const [last6Movements, setLast6Movements] = useState<LastRegistrosProps[]>([]);
-  const [historialFilter, setHistorialFilter] = useState<string>(''); 
+  const [historialFilter, setHistorialFilter] = useState<string>('');
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRangeType>('mensual'); 
 
   const setLast6MovementsCallback = useCallback((movements: LastRegistrosProps[]) => {
     setLast6Movements(movements);
@@ -95,15 +99,7 @@ export function CajaModule() {
       setLoadingKpis(false);
     }
 
-    const fetchingGraficosMovimientos = async() => {
-      setLoadingGraficos(true);
-      const egresosSemanales = await getMovimientosSemanales('egreso', 4);
-      const ingresosSemanales = await getMovimientosSemanales('ingreso', 4);
 
-      setEgresosSemanales(egresosSemanales);
-      setIngresosSemanales(ingresosSemanales);
-      setLoadingGraficos(false);
-    }
 
     const fetchingLastMovements = async() => {
       setLoading6Movements(true);
@@ -118,24 +114,62 @@ export function CajaModule() {
     }
 
     fetchingMovimientos();
-    fetchingGraficosMovimientos();
     fetchingLastMovements();
   }, [])
+
+  // Efecto separado para actualizar gráficos cuando cambia el rango de fechas
+  useEffect(() => {
+    const fetchingGraficosMovimientosDynamic = async() => {
+      setLoadingGraficos(true);
+      
+      // Obtener las etiquetas para el período seleccionado
+      const dateRange = getDateRangeByType(selectedDateRange);
+
+      const results = await Promise.all([
+        getGlobalDataByDateRange('egreso', selectedDateRange),
+        getGlobalDataByDateRange('ingreso', selectedDateRange)
+      ]);
+
+      const [egresosData, ingresosData] = results;
+      
+      // Adaptar el formato para los componentes existentes
+      setEgresosSemanales({
+        labels: dateRange.labels,
+        buckets: egresosData,
+        raw: [],
+        startISO: dateRange.startISO,
+        endISO: dateRange.endISO
+      });
+      setIngresosSemanales({
+        labels: dateRange.labels,
+        buckets: ingresosData,
+        raw: [],
+        startISO: dateRange.startISO,
+        endISO: dateRange.endISO
+      });
+      
+      setLoadingGraficos(false);
+    }
+
+    fetchingGraficosMovimientosDynamic();
+  }, [selectedDateRange])
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <p className="font-ui text-lg text-muted-foreground tracking-wide">Gestión de caja</p>
-          <h1 className="f  ont-display text-4xl text-foreground">
-            CAJA - <span className="text-primary">INGRESOS & EGRESOS</span>
-          </h1>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <p className="font-ui text-lg text-muted-foreground tracking-wide">Gestión de caja</p>
+            <h1 className="font-display text-4xl text-foreground">
+              CAJA - <span className="text-primary">INGRESOS & EGRESOS</span>
+            </h1>
+          </div>
+          <BotonesControl
+            setShowRegistrarForm={setShowRegistrarForm}
+            showRegistrarForm={showRegistrarForm}
+          />
         </div>
-        <BotonesControl
-        setShowRegistrarForm={setShowRegistrarForm}
-        showRegistrarForm={showRegistrarForm}
-        />
       </div>
       {/* KPI Cards */}
       {!showRegistrarForm && (
@@ -158,25 +192,26 @@ export function CajaModule() {
         />
       )} */}
 
+ {/* Date Range Selector */}
+        {!showRegistrarForm && (
+          <div className="flex justify-end">
+            <DateRangeSelector
+              value={selectedDateRange}
+              onValueChange={setSelectedDateRange}
+            />
+          </div>
+        )}
       {/* Gráfico de flujo semanal ingresos y egresos */}
       {!showRegistrarForm && (
       <>
-      {loadingGraficos ? (
-        <div>Loading...</div>
-      ) : (
+      
        <GraficoIngresosSemanales
       data={ingresosSemanales}
       />
-      )}
-      {
-        loadingGraficos ? (
-          <div>Loading...</div>
-        ) : (
+      
           <GraficoEgresosSemanales
       data={egresosSemanales}
       />
-        )
-      }
       </>
       )}
       {/* Historial de transacciones recientes */}
