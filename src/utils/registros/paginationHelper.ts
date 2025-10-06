@@ -1,10 +1,10 @@
-import supabase from '@/lib/supabaseClient'
-import type { PostgrestFilterBuilder } from '@supabase/postgrest-js'
+import supabase from "@/lib/supabaseClient";
+import type { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 
 /**
  * Hook/Función reutilizable para obtener TODOS los registros de una consulta Supabase
  * Sin importar la cantidad (supera automáticamente el límite de 1000)
- * 
+ *
  * @param queryBuilder - El query builder de Supabase ya configurado con filtros
  * @param options - Opciones de configuración
  * @returns Array con todos los registros encontrados
@@ -17,31 +17,41 @@ export const getAllRegistrosWithPagination = async <T = any>(
     logProgress?: boolean; // Mostrar progreso en consola (default: false)
   } = {}
 ): Promise<T[]> => {
-  const { 
-    batchSize = 1000, 
-    maxRecords = 50000, 
-    logProgress = false 
+  const DEFAULT_MAX_RECORDS = parseInt(
+    import.meta.env.VITE_MAX_RECORDS_LIMIT || "50000"
+  );
+  const WARNING_LIMIT = parseInt(
+    import.meta.env.VITE_RECORDS_WARNING_LIMIT || "40000"
+  );
+
+  const {
+    batchSize = 1000,
+    maxRecords = DEFAULT_MAX_RECORDS,
+    logProgress = false,
   } = options;
 
   let allData: T[] = [];
   let rangeStart = 0;
   let hasMore = true;
   let iteration = 0;
-
+  let hasWarnedOnce = false;
   if (logProgress) {
-    console.log('🔄 Iniciando carga paginada de registros...');
+    console.log("🔄 Iniciando carga paginada de registros...");
   }
 
   while (hasMore && allData.length < maxRecords) {
     iteration++;
-    
+
     // Clonar el query builder y agregar paginación
-    const paginatedQuery = queryBuilder.range(rangeStart, rangeStart + batchSize - 1);
-    
+    const paginatedQuery = queryBuilder.range(
+      rangeStart,
+      rangeStart + batchSize - 1
+    );
+
     const { data, error } = await paginatedQuery;
 
     if (error) {
-      console.error('❌ Error en paginación de registros:', error);
+      console.error("❌ Error en paginación de registros:", error);
       throw error;
     }
 
@@ -49,23 +59,49 @@ export const getAllRegistrosWithPagination = async <T = any>(
       allData = [...allData, ...data];
       rangeStart += batchSize;
       hasMore = data.length === batchSize; // Si trajo menos del batchSize, ya no hay más
-      
+
       if (logProgress) {
-        console.log(`📦 Lote ${iteration}: ${data.length} registros cargados (Total: ${allData.length})`);
+        console.log(
+          `📦 Lote ${iteration}: ${data.length} registros cargados (Total: ${allData.length})`
+        );
       }
     } else {
       hasMore = false;
     }
 
+    if (allData.length >= WARNING_LIMIT && allData.length < maxRecords && !hasWarnedOnce) {
+      console.warn(`
+🟡 ADVERTENCIA: Acercándose al límite de registros
+📊 Registros obtenidos: ${allData.length.toLocaleString()}/${maxRecords.toLocaleString()}
+💡 Considera filtros más específicos o aumentar el límite
+      `);
+      hasWarnedOnce = true;
+    }
+
     // Safety net: evitar loops infinitos
     if (allData.length >= maxRecords) {
-      console.warn(`⚠️ Alcanzado el límite máximo de ${maxRecords} registros por seguridad`);
+      console.error(`
+      🚨 LÍMITE DE REGISTROS ALCANZADO 🚨
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      📊 Registros obtenidos: ${allData.length.toLocaleString()}
+      ⚠️  POSIBLES registros faltantes: SÍ (se alcanzó el límite de seguridad)
+      🔧 Límite actual: ${maxRecords.toLocaleString()} registros
+      💡 Para aumentar el límite, modificar: NEXT_PUBLIC_MAX_RECORDS_LIMIT
+
+      ACCIÓN REQUERIDA:
+      1. Verificar si necesitas TODOS los registros
+      2. Aumentar NEXT_PUBLIC_MAX_RECORDS_LIMIT en .env
+      3. Considerar filtros más específicos para reducir el dataset
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      `);
       break;
     }
   }
 
   if (logProgress) {
-    console.log(`✅ Carga completada: ${allData.length} registros totales en ${iteration} lotes`);
+    console.log(
+      `✅ Carga completada: ${allData.length} registros totales en ${iteration} lotes`
+    );
   }
 
   return allData;
@@ -90,45 +126,48 @@ export const getAllRegistros = async <T = any>(
     logProgress?: boolean;
   } = {}
 ): Promise<T[]> => {
-  const { 
-    campos = 'id, tipo_movimiento, monto, fecha, destinatario_id, cuenta_contable_id, origen, created_at',
+  const {
+    campos = "id, tipo_movimiento, monto, fecha, destinatario_id, cuenta_contable_id, origen, created_at",
     batchSize = 1000,
-    logProgress = false
+    logProgress = false,
   } = options;
 
   // Construir la consulta base
   let query = supabase
-    .from('registros')
+    .from("registros")
     .select(campos)
-    .order('created_at', { ascending: false });
+    .order("created_at", { ascending: false });
 
   // Aplicar filtros condicionales
   if (filters.tipoMovimiento) {
-    query = query.eq('tipo_movimiento', filters.tipoMovimiento);
+    query = query.eq("tipo_movimiento", filters.tipoMovimiento);
   }
 
   if (filters.fechaDesde) {
-    query = query.gte('fecha', filters.fechaDesde);
+    query = query.gte("fecha", filters.fechaDesde);
   }
 
   if (filters.fechaHasta) {
-    query = query.lt('fecha', filters.fechaHasta);
+    query = query.lt("fecha", filters.fechaHasta);
   }
 
   if (filters.origen) {
-    query = query.eq('origen', filters.origen);
+    query = query.eq("origen", filters.origen);
   }
 
   if (filters.destinatarioIds && filters.destinatarioIds.length > 0) {
-    query = query.in('destinatario_id', filters.destinatarioIds);
+    query = query.in("destinatario_id", filters.destinatarioIds);
   }
 
   if (filters.cuentaContableIds && filters.cuentaContableIds.length > 0) {
-    query = query.in('cuenta_contable_id', filters.cuentaContableIds);
+    query = query.in("cuenta_contable_id", filters.cuentaContableIds);
   }
 
   // Usar la función de paginación universal
-  return getAllRegistrosWithPagination(query, { batchSize, logProgress }) as Promise<T[]>;
+  return getAllRegistrosWithPagination(query, {
+    batchSize,
+    logProgress,
+  }) as Promise<T[]>;
 };
 
 /**
@@ -144,29 +183,29 @@ export const getRegistrosCount = async (
   } = {}
 ): Promise<number> => {
   let query = supabase
-    .from('registros')
-    .select('id', { count: 'exact', head: true });
+    .from("registros")
+    .select("id", { count: "exact", head: true });
 
   if (filters.tipoMovimiento) {
-    query = query.eq('tipo_movimiento', filters.tipoMovimiento);
+    query = query.eq("tipo_movimiento", filters.tipoMovimiento);
   }
 
   if (filters.fechaDesde) {
-    query = query.gte('fecha', filters.fechaDesde);
+    query = query.gte("fecha", filters.fechaDesde);
   }
 
   if (filters.fechaHasta) {
-    query = query.lt('fecha', filters.fechaHasta);
+    query = query.lt("fecha", filters.fechaHasta);
   }
 
   if (filters.origen) {
-    query = query.eq('origen', filters.origen);
+    query = query.eq("origen", filters.origen);
   }
 
   const { count, error } = await query;
 
   if (error) {
-    console.error('Error obteniendo count de registros:', error);
+    console.error("Error obteniendo count de registros:", error);
     return 0;
   }
 

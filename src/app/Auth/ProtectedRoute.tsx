@@ -19,7 +19,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       const user = await supabase.auth.getUser();
       setUser(user.data.user);
       setLoading(false);
-      console.log({user})
     }
     fetchUser()
 

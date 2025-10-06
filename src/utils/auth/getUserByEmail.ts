@@ -7,9 +7,10 @@ export const getUserByEmail = async (email: string) => {
     .eq("email", email)
     .single();
 
-    console.log("getUserByEmail data:", data);
-    console.log("getUserByEmail error:", error);
+  if (error) {
+    console.error("Error fetching user by email:", error);
+    return null;
+  }
 
-  console.log("no error")
-  return data
+  return data;
 }

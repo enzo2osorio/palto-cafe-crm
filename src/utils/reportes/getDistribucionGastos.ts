@@ -86,8 +86,6 @@ export const getDistribucionGastos = async (mesesAtras: number = 3) => {
 
 export const getSubcategoriasDeCategoria = async (categoria: string, mesesAtras: number = 1) => {
   try {
-    console.log('🔍 Iniciando búsqueda de subcategorías para:', categoria);
-    
     const categoriaData = await getCategoriaIdByName(categoria);
     if (!categoriaData || categoriaData.length === 0) {
       return [];
@@ -136,7 +134,6 @@ export const getSubcategoriasDeCategoria = async (categoria: string, mesesAtras:
       return [];
     }
 
-    console.log(`📊 Registros encontrados:`, registros?.length || 0);
     
     if (registros && registros.length > 0) {
       registros.forEach((registro: any) => {

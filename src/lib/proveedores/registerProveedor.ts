@@ -62,10 +62,7 @@ export const registerAliases = async (proveedorId: string, aliases: string[]) =>
 
 export const registeringProveedor = async (proveedorr: DestinatariosPropsWithoutIdAndSubcategoryId) => {
     try {
-        const ss = proveedorr.subcategory
-        console.log({ss})
-        const subcategory = await getSubcategoryIdByName(proveedorr.subcategory);
-        console.log({subcategory})
+        const subcategory = await getSubcategoryIdByName(proveedorr.subcategory);        console.log({subcategory})
         if (!subcategory || !subcategory[0]?.id) {
             console.error('No se encontró subcategoryId para proveedor:', proveedorr);
             return {error: 'No se encontró subcategoryId para proveedor'};
