@@ -6,15 +6,23 @@ const margin = { right: 24 };
 
 export interface GraficoIngresosMensualesProps extends GraficoVentasMensualesProps {
   labels?: string[];
+  
 }
 
-export const GraficoIngresosMensuales = ({ data, labels }: GraficoIngresosMensualesProps) => {
+export const GraficoIngresosMensuales = ({ data, labels, selectedDateRange }: GraficoIngresosMensualesProps) => {
+
+  
+  const dateRangeLabel = selectedDateRange === 'mensual' ? 'mensuales'
+    : selectedDateRange === 'semanal' ? 'semanales'
+    : selectedDateRange === 'trimestral' ? 'trimestrales'
+    : selectedDateRange === 'anual' ? 'anuales'
+    : '';
 
   return (
     <Card className="card-warm p-6 border-0">
           <div className="space-y-6">
             <h3 className="font-body text-2xl text-center text-foreground">
-              Ingresos mensuales de cada dueño
+              Ingresos {dateRangeLabel} de cada dueño
             </h3>
             <div className="w-full e rounded-2xl pr-10">
               <LineChart

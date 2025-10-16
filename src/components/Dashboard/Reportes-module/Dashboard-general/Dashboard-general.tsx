@@ -231,7 +231,7 @@ export const DashboardGeneral = () => {
       </div>
 
       {/* Distribución de Gastos */}
-      <DistribucionGastosComponent mesesAtras={3} />
+      <DistribucionGastosComponent />
     </TabsContent>
   );
 };

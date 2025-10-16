@@ -9,10 +9,10 @@ interface DateRangeSelectorProps {
 }
 
 const options: Option[] = [
-  { value: 'semanal', label: '📅 Semanal' },
-  { value: 'mensual', label: '📊 Mensual' },
-  { value: 'trimestral', label: '📈 Trimestral' },
-  { value: 'anual', label: '📆 Anual' }
+  { value: 'semanal', label: '📅 Última semana' },
+  { value: 'mensual', label: '📊 Último mes' },
+  { value: 'trimestral', label: '📈 Último trimestre' },
+  { value: 'anual', label: '📆 Último año' }
 ]
 
 export const DateRangeSelector = ({ value, onValueChange, label = "Rango de tiempo" }: DateRangeSelectorProps) => {

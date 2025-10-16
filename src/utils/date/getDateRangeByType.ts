@@ -10,6 +10,77 @@ interface DateRange {
   labels: string[]
 }
 
+interface SinglePeriodRange {
+  startISO: string
+  endISO: string
+  label: string
+}
+
+/**
+ * Calcula el rango de fechas para un período único (último período)
+ */
+export const getSinglePeriodRange = (type: DateRangeType): SinglePeriodRange => {
+  const now = new Date()
+  
+  switch (type) {
+    case 'semanal': {
+      // Última semana completa (lunes a domingo de la semana pasada)
+      const weekData = getWeekly(-1) // Semana pasada
+      return {
+        startISO: weekData.startISO,
+        endISO: weekData.endExclusiveISO,
+        label: 'última semana completa'
+      }
+    }
+    
+    case 'mensual': {
+      // Último mes completo
+      const monthData = getLastMonth({ offset: -1 }) // Mes pasado
+      return {
+        startISO: monthData.startISO,
+        endISO: monthData.endExclusiveISO,
+        label: `último mes (${monthData.monthName})`
+      }
+    }
+    
+    case 'trimestral': {
+      // Último trimestre completo
+      const currentQuarter = Math.floor(now.getMonth() / 3)
+      const lastQuarter = currentQuarter - 1
+      const year = lastQuarter < 0 ? now.getFullYear() - 1 : now.getFullYear()
+      const quarter = lastQuarter < 0 ? 3 : lastQuarter
+      
+      const startMonth = quarter * 3
+      const startDate = new Date(year, startMonth, 1)
+      const endDate = new Date(year, startMonth + 3, 1)
+      
+      const quarterNames = ['primer', 'segundo', 'tercer', 'cuarto']
+      
+      return {
+        startISO: startDate.toISOString(),
+        endISO: endDate.toISOString(),
+        label: `último trimestre (${quarterNames[quarter]} trimestre ${year})`
+      }
+    }
+    
+    case 'anual': {
+      // Último año completo
+      const lastYear = now.getFullYear() - 1
+      const startDate = new Date(lastYear, 0, 1) // 1 de enero del año pasado
+      const endDate = new Date(lastYear + 1, 0, 1) // 1 de enero del año actual
+      
+      return {
+        startISO: startDate.toISOString(),
+        endISO: endDate.toISOString(),
+        label: `último año (${lastYear})`
+      }
+    }
+    
+    default:
+      return getSinglePeriodRange('mensual')
+  }
+}
+
 /**
  * Calcula los rangos de fechas y etiquetas basado en el tipo de período
  */

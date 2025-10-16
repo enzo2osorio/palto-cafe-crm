@@ -49,15 +49,6 @@ export function InicioSkeleton() {
         </div>
       </div>
 
-      {/* Gráficos circulares */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {[1, 2].map((i) => (
-          <div key={i} className="p-8 rounded-xl bg-muted/50 flex flex-col items-center gap-6">
-            <div className="w-32 h-32 bg-muted rounded-full" />
-            <div className="h-4 w-40 bg-muted rounded" />
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

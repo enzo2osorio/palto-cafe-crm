@@ -24,6 +24,7 @@ export function InicioModule() {
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingGraphic, setLoadingGraphic] = useState(true);
   const [kpisLoading, setKPISLoading] = useState(true);
   const [kpiData, setKPIData] = useState<KPISProps[]>([]);
   const [dataGraphiIngreso, setDataGraphicIngreso] = useState<GraphicProps[]>();
@@ -88,9 +89,8 @@ export function InicioModule() {
 
   useEffect(() => {
     if (!user) return;
-    
     async function fetchDataForGraphic() {
-      // Obtener las etiquetas para el período seleccionado
+      setLoadingGraphic(true);
       const dateRange = getDateRangeByType(selectedDateRange);
       setDateLabels(dateRange.labels);
 
@@ -103,6 +103,7 @@ export function InicioModule() {
       
       setDataGraphicIngreso(ingresos);
       setDataGraphicEgreso(egresos)
+      setLoadingGraphic(false);
     }
 
     fetchDataForGraphic();
@@ -145,15 +146,35 @@ export function InicioModule() {
         </div>
       
       {/* Gráficos con rangos de fechas dinámicos */}
-      <GraficoEgresosMensuales
-        data={dataGraphiEgreso}
-        labels={dateLabels}
-      />
+      {
+        loadingGraphic ? (
+           <div className="grid grid-cols-1 gap-8">
+        {/* Gráfico de ventas diarias */}
+        <div className="p-6 rounded-xl bg-muted/50 flex flex-col gap-6">
+          <div className="h-6 w-48 bg-muted rounded mx-auto" />
+          <div className="h-48 w-full bg-muted rounded" />
+        </div>
+        <div className="p-6 rounded-xl bg-muted/50 flex flex-col gap-6">
+          <div className="h-6 w-48 bg-muted rounded mx-auto" />
+          <div className="h-48 w-full bg-muted rounded" />
+        </div>
+      </div>
+        ) : (
+          <>
+            <GraficoEgresosMensuales
+              data={dataGraphiEgreso}
+              labels={dateLabels}
+              selectedDateRange={selectedDateRange}
+            />
 
-      <GraficoIngresosMensuales
-        data={dataGraphiIngreso}
-        labels={dateLabels}
-      />
+            <GraficoIngresosMensuales
+              data={dataGraphiIngreso}
+              labels={dateLabels}
+              selectedDateRange={selectedDateRange}
+            />
+          </>
+        )
+      }
     </div>
   );
 }

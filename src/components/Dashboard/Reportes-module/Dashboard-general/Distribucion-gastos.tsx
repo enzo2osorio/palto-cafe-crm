@@ -3,23 +3,26 @@ import { Card } from '@/components/ui/card';
 import { getDistribucionGastos, getSubcategoriasDeCategoria, type DistribucionGastos, type SubcategoriaGasto } from '@/utils/reportes/getDistribucionGastos';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { DateRangeSelector, type DateRangeType } from '@/components/Reusable/DateRangeSelector';
+import { getSinglePeriodRange } from '@/utils/date/getDateRangeByType';
 
 interface DistribucionGastosProps {
-  mesesAtras?: number;
+  // Props futuras si se necesitan
 }
 
-export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGastosProps) => {
+export const DistribucionGastosComponent = ({}: DistribucionGastosProps = {}) => {
   const [loading, setLoading] = useState(true);
   const [gastos, setGastos] = useState<DistribucionGastos[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [subcategorias, setSubcategorias] = useState<SubcategoriaGasto[]>([]);
   const [loadingSubcategorias, setLoadingSubcategorias] = useState(false);
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRangeType>('mensual');
 
   useEffect(() => {
     const fetchGastos = async () => {
       setLoading(true);
       try {
-        const gastosData = await getDistribucionGastos(mesesAtras);
+        const gastosData = await getDistribucionGastos(selectedDateRange);
         setGastos(gastosData);
       } catch (error) {
         console.error('Error fetching gastos:', error);
@@ -29,7 +32,7 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
     };
 
     fetchGastos();
-  }, [mesesAtras]);
+  }, [selectedDateRange]);
 
   const handleCategoryClick = async (e: React.MouseEvent, categoria: string) => {
     e.preventDefault();
@@ -45,7 +48,7 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
     setExpandedCategory(categoria);
     
     try {
-      const subcategoriasData = await getSubcategoriasDeCategoria(categoria, mesesAtras);
+      const subcategoriasData = await getSubcategoriasDeCategoria(categoria, selectedDateRange);
       setSubcategorias(subcategoriasData);
     } catch (error) {
       console.error('Error fetching subcategorias:', error);
@@ -76,6 +79,12 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
     return colors[index % colors.length];
   };
 
+  const getPeriodLabel = (dateRange: DateRangeType) => {
+    // Usar la función de utilidad para obtener etiquetas más descriptivas
+    const { label } = getSinglePeriodRange(dateRange);
+    return label;
+  };
+
   if (loading) {
     return (
       <Card className="card-warm p-6 border-0">
@@ -95,7 +104,14 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
 
   return (
     <Card className="card-warm p-6 border-0">
-      <h3 className="font-body text-xl text-foreground mb-6">Distribución de Gastos</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-body text-xl text-foreground">Distribución de Gastos</h3>
+        <DateRangeSelector 
+          value={selectedDateRange}
+          onValueChange={setSelectedDateRange}
+          label="Período"
+        />
+      </div>
       
       <div className="space-y-4">
         {gastos.map((gasto, index) => (
@@ -173,7 +189,7 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
                 ) : subcategorias.length > 0 ? (
                   <>
                     <div className="text-xs text-muted-foreground mb-2 px-2">
-                      Desglose de subcategorías para {gasto.categoria}:
+                      Desglose de subcategorías para {gasto.categoria} ({getPeriodLabel(selectedDateRange)}):
                     </div>
                     {subcategorias.map((sub, subIndex) => (
                       <div key={subIndex} className="flex items-center space-x-4 p-3 rounded-lg bg-muted/10 border border-muted/20">
@@ -204,7 +220,7 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
                   </>
                 ) : (
                   <div className="text-sm text-muted-foreground px-2 py-3 text-center bg-muted/5 rounded-lg">
-                    No hay subcategorías disponibles para {gasto.categoria}
+                    No hay subcategorías disponibles para {gasto.categoria} en {getPeriodLabel(selectedDateRange)}
                   </div>
                 )}
               </div>
@@ -216,7 +232,7 @@ export const DistribucionGastosComponent = ({ mesesAtras = 3 }: DistribucionGast
       {/* Información adicional */}
       {gastos.length === 0 && !loading && (
         <div className="text-center text-muted-foreground py-8">
-          No se encontraron gastos para el período seleccionado
+          No se encontraron gastos para {getPeriodLabel(selectedDateRange)}
         </div>
       )}
     </Card>
