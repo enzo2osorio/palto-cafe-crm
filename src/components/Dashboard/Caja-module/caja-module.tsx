@@ -7,26 +7,32 @@ import type { KPISProps } from '@/types/inicio';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { DollarSign, TrendingDown, TrendingUp } from 'lucide-react';
 import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
-import type { MovimientosSemanales } from '@/types/movimientosSemanales';
-import { GraficoIngresosSemanales } from './Grafico-ingresos-semanales';
-import { GraficoEgresosSemanales } from './Graficos-egresos-semanales';
+import { GraficoUnificado } from './Grafico-unificado';
 import { getRegistrosWithDestinatariosAndMetodoPagoAndCuentaContable, type LastRegistrosProps } from '@/utils/registros/getRegistros';
 import { HistorialSkeleton } from '../Skeletons/HistorialSkeleton';
 import { DateRangeSelector } from '@/components/Reusable/DateRangeSelector';
 import type { DateRangeType } from '@/utils/date/getDateRangeByType';
-import { getDateRangeByType } from '@/utils/date/getDateRangeByType';
-import { getGlobalDataByDateRange } from '@/utils/flujo-de-caja/ingresos-egresos/getGlobalDataByDateRange';
+import { getAggregatedDataWithLabels } from '@/utils/registros/registrosMensuales/getDataToOwnersByDateRange';
+import type { CustomDateRange } from '@/utils/date/getDateRangeByType';
 
 export function CajaModule() {
   const [showRegistrarForm, setShowRegistrarForm] = useState(false);
   const [kpisCards, setKpisCards] = useState<KPISProps[]>([]);
   const [loadingKpis, setLoadingKpis] = useState(true);
   const [loading6Movements, setLoading6Movements] = useState(true);
-  const [ingresosSemanales, setIngresosSemanales] = useState<MovimientosSemanales>();
-  const [egresosSemanales, setEgresosSemanales] = useState<MovimientosSemanales>();
   const [last6Movements, setLast6Movements] = useState<LastRegistrosProps[]>([]);
   const [historialFilter, setHistorialFilter] = useState<string>('');
-  const [selectedDateRange, setSelectedDateRange] = useState<DateRangeType>('mensual'); 
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRangeType>('mensual');
+  // Estados para rango personalizado
+  const [customDateRange, setCustomDateRange] = useState<CustomDateRange | null>(null);
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [loadingGraphicCustom, setLoadingGraphicCustom] = useState(false);
+  const [unifiedGraphData, setUnifiedGraphData] = useState<{
+    labels: string[];
+    ingresos: number[];
+    egresos: number[];
+  } | null>(null); 
 
   const setLast6MovementsCallback = useCallback((movements: LastRegistrosProps[]) => {
     setLast6Movements(movements);
@@ -120,36 +126,54 @@ export function CajaModule() {
   useEffect(() => {
     const fetchingGraficosMovimientosDynamic = async() => {
       
-      // Obtener las etiquetas para el período seleccionado
-      const dateRange = getDateRangeByType(selectedDateRange);
+      if (selectedDateRange === 'personalizado' && customDateRange?.startDate && customDateRange?.endDate) {
+        // Para rangos personalizados, usar las funciones que manejan escalado automático
+        const [egresosResult, ingresosResult] = await Promise.all([
+          getAggregatedDataWithLabels('egreso', selectedDateRange, customDateRange),
+          getAggregatedDataWithLabels('ingreso', selectedDateRange, customDateRange)
+        ]);
 
-      const results = await Promise.all([
-        getGlobalDataByDateRange('egreso', selectedDateRange),
-        getGlobalDataByDateRange('ingreso', selectedDateRange)
-      ]);
+        // Actualizar datos unificados para la gráfica combinada
+        setUnifiedGraphData({
+          labels: egresosResult.labels, // Ambos deberían tener las mismas etiquetas
+          ingresos: ingresosResult.data,
+          egresos: egresosResult.data
+        });
+        
+      } else {
+        // Para rangos predefinidos, usar las nuevas funciones también
+        const [egresosResult, ingresosResult] = await Promise.all([
+          getAggregatedDataWithLabels('egreso', selectedDateRange),
+          getAggregatedDataWithLabels('ingreso', selectedDateRange)
+        ]);
 
-      const [egresosData, ingresosData] = results;
-      
-      // Adaptar el formato para los componentes existentes
-      setEgresosSemanales({
-        labels: dateRange.labels,
-        buckets: egresosData,
-        raw: [],
-        startISO: dateRange.startISO,
-        endISO: dateRange.endISO
-      });
-      setIngresosSemanales({
-        labels: dateRange.labels,
-        buckets: ingresosData,
-        raw: [],
-        startISO: dateRange.startISO,
-        endISO: dateRange.endISO
-      });
-      
+        // Actualizar datos unificados para la gráfica combinada
+        setUnifiedGraphData({
+          labels: egresosResult.labels,
+          ingresos: ingresosResult.data,
+          egresos: egresosResult.data
+        });
+      }
     }
 
     fetchingGraficosMovimientosDynamic();
-  }, [selectedDateRange])
+  }, [selectedDateRange, customDateRange])
+
+  const handleCustomRangeApply = (startDate: Date, endDate: Date) => {
+    console.log('Caja - Aplicando rango personalizado:', {
+      startDate: startDate.toDateString(),
+      endDate: endDate.toDateString()
+    });
+    setLoadingGraphicCustom(true);
+    setCustomDateRange({ startDate, endDate });
+    // El loading se manejará en el useEffect
+    setTimeout(() => setLoadingGraphicCustom(false), 100);
+  };
+
+  const handleCustomDatesChange = (startDate: string, endDate: string) => {
+    setCustomStartDate(startDate);
+    setCustomEndDate(endDate);
+  };
 
   return (
     <div className="space-y-8">
@@ -195,21 +219,17 @@ export function CajaModule() {
             <DateRangeSelector
               value={selectedDateRange}
               onValueChange={setSelectedDateRange}
+              onCustomRangeApply={handleCustomRangeApply}
+              loading={loadingGraphicCustom}
+              customStartDate={customStartDate}
+              customEndDate={customEndDate}
+              onCustomDatesChange={handleCustomDatesChange}
             />
           </div>
         )}
-      {/* Gráfico de flujo semanal ingresos y egresos */}
+      {/* Gráfico unificado de flujo de caja */}
       {!showRegistrarForm && (
-      <>
-      
-       <GraficoIngresosSemanales
-      data={ingresosSemanales}
-      />
-      
-          <GraficoEgresosSemanales
-      data={egresosSemanales}
-      />
-      </>
+        <GraficoUnificado data={unifiedGraphData} />
       )}
       {/* Historial de transacciones recientes */}
       {

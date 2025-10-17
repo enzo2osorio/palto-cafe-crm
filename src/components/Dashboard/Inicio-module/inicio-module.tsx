@@ -8,12 +8,12 @@ import {  getDailyIngresosToOwners } from '@/utils/registros/getDailyRegistros';
 import type { KPISProps } from '@/types/inicio';
 import { DollarSign } from 'lucide-react';
 import { KPISCardsSkeleton } from '../Skeletons/KpisCardsSkeleton';
-import { getDataToOwnersByDateRange } from '@/utils/registros/registrosMensuales/getDataToOwnersByDateRange';
+import { getDataToOwnersByDateRange, getAggregatedDataWithLabels } from '@/utils/registros/registrosMensuales/getDataToOwnersByDateRange';
 import { GraficoIngresosMensuales } from './Grafico-ingresos-mensuales';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { DateRangeSelector } from '@/components/Reusable/DateRangeSelector';
 import type { DateRangeType } from '@/utils/date/getDateRangeByType';
-import { getDateRangeByType } from '@/utils/date/getDateRangeByType';
+
 
 export interface GraphicProps{
   owner : string;
@@ -31,6 +31,11 @@ export function InicioModule() {
   const [dataGraphiEgreso, setDataGraphicEgreso] = useState<GraphicProps[]>();
   const [selectedDateRange, setSelectedDateRange] = useState<DateRangeType>('mensual');
   const [dateLabels, setDateLabels] = useState<string[]>([]);
+  // Estados para rango personalizado
+  const [customDateRange, setCustomDateRange] = useState<{ startDate?: Date; endDate?: Date } | null>(null);
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [loadingGraphicCustom, setLoadingGraphicCustom] = useState(false);
 
   useEffect(() => {
     fetchingAuthUser({ setUser, setLoading });
@@ -91,15 +96,18 @@ export function InicioModule() {
     if (!user) return;
     async function fetchDataForGraphic() {
       setLoadingGraphic(true);
-      const dateRange = getDateRangeByType(selectedDateRange);
-      setDateLabels(dateRange.labels);
+      
+      // Obtener datos y etiquetas inteligentes
+      const [egresosResult, ingresosResult, egresos, ingresos] = await Promise.all([
+        getAggregatedDataWithLabels("egreso", selectedDateRange, customDateRange),
+        getAggregatedDataWithLabels("ingreso", selectedDateRange, customDateRange),
+        getDataToOwnersByDateRange("egreso", selectedDateRange, customDateRange),
+        getDataToOwnersByDateRange("ingreso", selectedDateRange, customDateRange)
+      ]);
 
-      const results = await Promise.all([
-        getDataToOwnersByDateRange("egreso", selectedDateRange),
-        getDataToOwnersByDateRange("ingreso", selectedDateRange)
-      ])
-
-      const [egresos, ingresos] = results
+      // Usar las etiquetas inteligentes de la nueva función
+      // Ambos deberían tener las mismas etiquetas, pero verificamos por seguridad
+      setDateLabels(egresosResult.labels.length > 0 ? egresosResult.labels : ingresosResult.labels);
       
       setDataGraphicIngreso(ingresos);
       setDataGraphicEgreso(egresos)
@@ -107,7 +115,23 @@ export function InicioModule() {
     }
 
     fetchDataForGraphic();
-  }, [user, selectedDateRange])
+  }, [user, selectedDateRange, customDateRange])
+
+  const handleCustomRangeApply = (startDate: Date, endDate: Date) => {
+    console.log('Inicio - Aplicando rango personalizado:', {
+      startDate: startDate.toDateString(),
+      endDate: endDate.toDateString()
+    });
+    setLoadingGraphicCustom(true);
+    setCustomDateRange({ startDate, endDate });
+    // El loading se manejará en el useEffect
+    setTimeout(() => setLoadingGraphicCustom(false), 100);
+  };
+
+  const handleCustomDatesChange = (startDate: string, endDate: string) => {
+    setCustomStartDate(startDate);
+    setCustomEndDate(endDate);
+  };
 
   if(loading){
     return <InicioSkeleton/>
@@ -142,6 +166,11 @@ export function InicioModule() {
           <DateRangeSelector
             value={selectedDateRange}
             onValueChange={setSelectedDateRange}
+            onCustomRangeApply={handleCustomRangeApply}
+            loading={loadingGraphicCustom}
+            customStartDate={customStartDate}
+            customEndDate={customEndDate}
+            onCustomDatesChange={handleCustomDatesChange}
           />
         </div>
       

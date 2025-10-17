@@ -1,6 +1,6 @@
 import supabase from '@/lib/supabaseClient';
 import { getCategoriaIdByName } from '../registros/proveedores/getCategoriaProveedores';
-import { getSinglePeriodRange, type DateRangeType } from '../date/getDateRangeByType';
+import { getSinglePeriodRange, type DateRangeType, type CustomDateRange } from '../date/getDateRangeByType';
 
 export interface DistribucionGastos {
   categoria: string;
@@ -16,10 +16,10 @@ export interface SubcategoriaGasto {
   porcentajeDeLaCategoria: number;
 }
 
-export const getDistribucionGastos = async (dateRangeType: DateRangeType = 'mensual') => {
+export const getDistribucionGastos = async (dateRangeType: DateRangeType = 'mensual', customRange?: CustomDateRange) => {
   try {
     // Obtener el rango de fechas según el tipo seleccionado (período único)
-    const { startISO, endISO } = getSinglePeriodRange(dateRangeType);
+    const { startISO, endISO } = getSinglePeriodRange(dateRangeType, customRange);
     
     // Obtener todas las categorías
     const {data: categorias, error: categoriasError} = await supabase
@@ -87,7 +87,7 @@ export const getDistribucionGastos = async (dateRangeType: DateRangeType = 'mens
   }
 };
 
-export const getSubcategoriasDeCategoria = async (categoria: string, dateRangeType: DateRangeType = 'mensual') => {
+export const getSubcategoriasDeCategoria = async (categoria: string, dateRangeType: DateRangeType = 'mensual', customRange?: CustomDateRange) => {
   try {
     const categoriaData = await getCategoriaIdByName(categoria);
     if (!categoriaData || categoriaData.length === 0) {
@@ -100,7 +100,7 @@ export const getSubcategoriasDeCategoria = async (categoria: string, dateRangeTy
     }
     
     // Obtener el rango de fechas según el tipo seleccionado (período único)
-    const { startISO, endISO } = getSinglePeriodRange(dateRangeType);
+    const { startISO, endISO } = getSinglePeriodRange(dateRangeType, customRange);
     
     const subcategorias: { [key: string]: number } = {};
     let totalCategoria = 0;

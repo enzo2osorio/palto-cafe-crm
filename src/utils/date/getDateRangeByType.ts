@@ -1,7 +1,7 @@
 import { getLastMonth } from "./getLastMonth"
 import { getWeekly } from "./getWeekly"
 
-export type DateRangeType = 'semanal' | 'mensual' | 'trimestral' | 'anual'
+export type DateRangeType = 'semanal' | 'mensual' | 'trimestral' | 'anual' | 'personalizado'
 
 interface DateRange {
   startISO: string
@@ -16,10 +16,15 @@ interface SinglePeriodRange {
   label: string
 }
 
+export interface CustomDateRange {
+  startDate?: Date
+  endDate?: Date
+}
+
 /**
- * Calcula el rango de fechas para un período único (último período)
+ * Calcula el rango de fechas para un período único (último período) o rango personalizado
  */
-export const getSinglePeriodRange = (type: DateRangeType): SinglePeriodRange => {
+export const getSinglePeriodRange = (type: DateRangeType, customRange?: CustomDateRange): SinglePeriodRange => {
   const now = new Date()
   
   switch (type) {
@@ -73,6 +78,39 @@ export const getSinglePeriodRange = (type: DateRangeType): SinglePeriodRange => 
         startISO: startDate.toISOString(),
         endISO: endDate.toISOString(),
         label: `último año (${lastYear})`
+      }
+    }
+    
+    case 'personalizado': {
+      // Rango personalizado proporcionado por el usuario
+      if (!customRange?.startDate || !customRange?.endDate) {
+        // Fallback al último mes si no se proporcionan fechas
+        return getSinglePeriodRange('mensual')
+      }
+      
+      const startDate = new Date(customRange.startDate)
+      startDate.setHours(0, 0, 0, 0) // Inicio del día
+      
+      const endDate = new Date(customRange.endDate)
+      endDate.setHours(23, 59, 59, 999) // Final del día (23:59:59.999)
+      
+      // Crear fecha de fin exclusiva (día siguiente a las 00:00)
+      const endExclusive = new Date(endDate)
+      endExclusive.setDate(endExclusive.getDate() + 1)
+      endExclusive.setHours(0, 0, 0, 0)
+      
+      const formatDate = (date: Date) => {
+        return date.toLocaleDateString('es-ES', { 
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric' 
+        })
+      }
+      
+      return {
+        startISO: startDate.toISOString(),
+        endISO: endExclusive.toISOString(),
+        label: `${formatDate(startDate)} a ${formatDate(new Date(customRange.endDate))}`
       }
     }
     
@@ -180,6 +218,17 @@ export const getDateRangeByType = (type: DateRangeType): DateRange => {
         labels
       }
     }
+    
+    case 'personalizado': {
+      // Para el caso personalizado, retornamos valores por defecto
+      // La lógica real del rango personalizado está en getSinglePeriodRange
+      return getDateRangeByType('mensual')
+    }
+    
+    default: {
+      // Fallback al caso mensual
+      return getDateRangeByType('mensual')
+    }
   }
 }
 
@@ -197,7 +246,7 @@ export const groupRegistrosByPeriod = (
   
   registros.forEach(registro => {
     const fecha = new Date(registro.fecha)
-    let periodIndex: number
+    let periodIndex: number = -1 // Inicializar con valor por defecto
     
     switch (type) {
       case 'semanal': {
@@ -226,6 +275,12 @@ export const groupRegistrosByPeriod = (
       case 'anual': {
         const startDate = new Date(startISO)
         periodIndex = fecha.getFullYear() - startDate.getFullYear()
+        break
+      }
+      
+      case 'personalizado': {
+        // Para rangos personalizados, todos los registros van al primer bucket
+        periodIndex = 0
         break
       }
     }
