@@ -1,118 +1,106 @@
 import { Input } from '@/components/ui/input'
 import { SelectCustom, type Option } from '@/components/ui/SelectCustom'
-import { useRegistrosStore } from '@/lib/store/registrosStore'
-import { getRegistrosWithFilters } from '@/utils/registros/getRegistrosWithFilters'
+import { initialFilters, useRegistrosStore, type RegistroFilter } from '@/lib/store/registrosStore'
 import { Search, Filter, Calendar, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ButtonCustom } from '@/components/ui/ButtonCustom'
+import { CustomDatePicker } from './ReusableDatePicker'
+import { getRegistrosWithFilters } from '@/utils/registros/getRegistrosWithFilters'
 
-interface FiltradoComprobantesProps {
-  onFiltersChange?: () => void
-}
 
-export const FiltradoComprobantes = ({ onFiltersChange }: FiltradoComprobantesProps) => {
+export const FiltradoComprobantes = () => {
   const {
     filters,
-    pagination,
-    setSearchTerm,
-    setTipoMovimiento,
-    setOrigen,
-    setFechaDesde,
-    setFechaHasta,
-    resetFilters,
     setRegistros,
-    setTotalCount,
-    setLoading
+    resetFilters,
+    setTotalCount
   } = useRegistrosStore()
 
   const timerRef = useRef<number | null>(null)
-  const [localSearch, setLocalSearch] = useState(filters.searchTerm)
   const [showDateFilters, setShowDateFilters] = useState(false)
+  const [filtersSelected, setFiltersSelected] = useState<RegistroFilter>({
+    ...initialFilters
+  })
+  // Estados locales para las fechas
+  const [localFechaDesde, setLocalFechaDesde] = useState<string>(filters.fechaDesde || '')
+  const [localFechaHasta, setLocalFechaHasta] = useState<string>(filters.fechaHasta || '')
 
   // Opciones para los selects
   const tipoMovimientoOptions: Option[] = [
-    { value: 'todos', label: '📊 Todos los tipos' },
+    { value: 'todos_tipos', label: '📊 Todos los tipos' },
     { value: 'ingreso', label: '💰 Ingresos' },
     { value: 'egreso', label: '💸 Egresos' }
   ]
 
   const origenOptions: Option[] = [
-    { value: 'todos', label: '🌐 Todos los orígenes' },
+    { value: 'todos_origenes', label: '🌐 Todos los orígenes' },
     { value: 'bot', label: '🤖 Bot' },
     { value: 'fudo', label: '📱 Fudo' },
-    { value: 'manual', label: '✋ Manual' }
   ]
 
-  // Debounced search
+  const applyFilters = (searchTerm: string, tipoMovimiento: string, origen: string, fechaDesde?: string, fechaHasta?: string) => {
+    setFiltersSelected((prev) => ({
+      ...prev,
+      searchTerm,
+      tipoMovimiento,
+      origen,
+      fechaDesde,
+      fechaHasta
+    }))
+  }
+
+  useEffect(() => {
+   const fetchFilteredRegistros = async () => {
+    if(filtersSelected !== initialFilters){
+      const registrosWithFilters = await getRegistrosWithFilters(filtersSelected, { page: 0, limit: 10 } )
+      setRegistros(registrosWithFilters.data)
+      setTotalCount(registrosWithFilters.count)
+      
+    }
+   }
+    fetchFilteredRegistros()
+  }, [filtersSelected])
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    setLocalSearch(value)
+    setFiltersSelected((prev) => ({ ...prev, searchTerm: value }))
 
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = window.setTimeout(() => {
-      setSearchTerm(value)
-      applyFilters(value, filters.tipoMovimiento, filters.origen)
-    }, 400)
+      applyFilters(value, filters.tipoMovimiento, filters.origen, filters.fechaDesde, filters.fechaHasta)
+    }, 1000)
   }
 
   const handleTipoMovimientoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
-    setTipoMovimiento(value)
-    // Usar el valor directamente en lugar del estado que puede estar desactualizado
-    applyFilters(filters.searchTerm, value, filters.origen)
+    console.log('[UI] 🎚 tipoMovimiento change', { from: filters.tipoMovimiento, to: value })
+    applyFilters(filters.searchTerm, value, filters.origen, filters.fechaDesde, filters.fechaHasta)
   }
 
   const handleOrigenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
-    setOrigen(value)
-    // Usar el valor actualizado directamente
-    applyFilters(filters.searchTerm, filters.tipoMovimiento, value)
+    console.log('[UI] 🌐 origen change', { from: filters.origen, to: value })
+    applyFilters(filters.searchTerm, filters.tipoMovimiento, value, filters.fechaDesde, filters.fechaHasta)
   }
 
-  const handleDateChange = (type: 'desde' | 'hasta', value: string) => {
-    if (type === 'desde') {
-      setFechaDesde(value || undefined)
-    } else {
-      setFechaHasta(value || undefined)
-    }
-    // Apply filters with a small delay
-    setTimeout(() => {
-      applyFilters(filters.searchTerm, filters.tipoMovimiento, filters.origen)
-    }, 100)
+  // Nueva función para aplicar filtros de fecha
+  const handleApplyDateFilters = () => {
+    setLocalFechaDesde(filters.fechaDesde || '')
+    setLocalFechaHasta(filters.fechaHasta || '')
+    applyFilters(
+      filters.searchTerm,
+      filters.tipoMovimiento,
+      filters.origen,
+      localFechaDesde || undefined,
+      localFechaHasta || undefined
+    )
   }
 
-  const applyFilters = async (
-    searchTerm: string,
-    tipoMovimiento: string,
-    origen: string
-  ) => {
-    setLoading(true)
-    try {
-      const currentFilters = {
-        searchTerm,
-        tipoMovimiento,
-        origen,
-        fechaDesde: filters.fechaDesde,
-        fechaHasta: filters.fechaHasta
-      }
-
-      const { data, count } = await getRegistrosWithFilters(currentFilters, pagination)
-
-      setRegistros(data)
-      setTotalCount(count)
-      onFiltersChange?.()
-    } catch (error) {
-      console.error('Error aplicando filtros:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleResetFilters = () => {
-    setLocalSearch('')
     resetFilters()
     setShowDateFilters(false)
-    applyFilters('', 'todos', 'todos')
+    applyFilters(filters.searchTerm, filters.tipoMovimiento, filters.origen, undefined, undefined)
   }
 
   const hasActiveFilters = 
@@ -120,7 +108,7 @@ export const FiltradoComprobantes = ({ onFiltersChange }: FiltradoComprobantesPr
     filters.tipoMovimiento !== 'todos' ||
     filters.origen !== 'todos' ||
     filters.fechaDesde ||
-    filters.fechaHasta
+    filters.fechaHasta;
 
   useEffect(() => {
     return () => {
@@ -128,16 +116,16 @@ export const FiltradoComprobantes = ({ onFiltersChange }: FiltradoComprobantesPr
     }
   }, [])
 
+
+
   return (
     <div className="space-y-4">
-      {/* Fila principal de filtros */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-        {/* Búsqueda */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por nombre del destinatario..."
-            value={localSearch}
+            value={filtersSelected.searchTerm}
             onChange={handleSearchChange}
             className="pl-10 bg-input-background border-0 rounded-2xl font-ui"
           />
@@ -148,14 +136,14 @@ export const FiltradoComprobantes = ({ onFiltersChange }: FiltradoComprobantesPr
           <Filter className="w-4 h-4 text-muted-foreground" />
           
           <SelectCustom
-            value={filters.tipoMovimiento}
+            value={filtersSelected.tipoMovimiento}
             onChange={handleTipoMovimientoChange}
             options={tipoMovimientoOptions}
             className="min-w-[160px]"
           />
 
           <SelectCustom
-            value={filters.origen}
+            value={filtersSelected.origen}
             onChange={handleOrigenChange}
             options={origenOptions}
             className="min-w-[160px]"
@@ -188,44 +176,37 @@ export const FiltradoComprobantes = ({ onFiltersChange }: FiltradoComprobantesPr
       {showDateFilters && (
         <div className="bg-muted/30 rounded-2xl p-4">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">
-                Fecha desde:
-              </label>
-              <input
-                type="date"
-                value={filters.fechaDesde || ''}
-                onChange={(e) => handleDateChange('desde', e.target.value)}
-                className="px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
+             <CustomDatePicker
+               label="Fecha desde:"
+               localDate={localFechaDesde}
+               setLocalDate={setLocalFechaDesde}
+             />
+            <CustomDatePicker
+             label="Fecha hasta:"
+             localDate={localFechaHasta}
+             setLocalDate={setLocalFechaHasta}
+            />
+            <div className="flex items-end space-x-2">
+              <ButtonCustom
+                onClick={handleApplyDateFilters}
+                className="bg-primary px-4 hover:bg-primary/90 text-primary-foreground"
+              >
+                Filtrar
+              </ButtonCustom>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">
-                Fecha hasta:
-              </label>
-              <input
-                type="date"
-                value={filters.fechaHasta || ''}
-                onChange={(e) => handleDateChange('hasta', e.target.value)}
-                className="px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-
-            {(filters.fechaDesde || filters.fechaHasta) && (
-              <div className="flex items-end">
+              {(localFechaDesde || localFechaHasta) && (
                 <ButtonCustom
                   onClick={() => {
-                    setFechaDesde(undefined)
-                    setFechaHasta(undefined)
-                    applyFilters(filters.searchTerm, filters.tipoMovimiento, filters.origen)
+                    setLocalFechaDesde('')
+                    setLocalFechaHasta('')
+                    applyFilters(filters.searchTerm, filters.tipoMovimiento, filters.origen, undefined, undefined)
                   }}
                   className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
                 >
                   Limpiar fechas
                 </ButtonCustom>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -241,15 +222,15 @@ export const FiltradoComprobantes = ({ onFiltersChange }: FiltradoComprobantesPr
             </span>
           )}
           
-          {filters.tipoMovimiento !== 'todos' && (
+          {filters.tipoMovimiento !== 'todos_tipos' && (
             <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
               Tipo: {tipoMovimientoOptions.find(o => o.value === filters.tipoMovimiento)?.label?.replace(/^📊|💰|💸/, '').trim()}
             </span>
           )}
           
-          {filters.origen !== 'todos' && (
+          {filters.origen !== 'todos_origenes' && (
             <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-              Origen: {origenOptions.find(o => o.value === filters.origen)?.label?.replace(/^🌐|🤖|📱|✋/, '').trim()}
+              Origen: {origenOptions.find(o => o.value === filters.origen)?.label?.replace(/^🌐|🤖|📱/, '').trim()}
             </span>
           )}
           

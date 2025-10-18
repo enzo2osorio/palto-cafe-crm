@@ -1,6 +1,5 @@
 import supabase from "@/lib/supabaseClient"
 import type { RegistroFilter, PaginationForRegistros, RegistroWithDetails } from "@/lib/store/registrosStore"
-import { getCategoryNameOfDestinatario } from "./getCategoryOfDestinatario"
 import { getSubcategoryNameOfDestinatario } from "./subcategorias/getSubcategoryOfDestinatario"
 
 /**
@@ -46,22 +45,24 @@ export const getRegistrosWithFilters = async (
       query = query.in('destinatario_id', destinatariosIds)
     }
 
-    // Aplicar filtro de tipo de movimiento
-    if (filters.tipoMovimiento && filters.tipoMovimiento !== 'todos') {
+    if (filters.tipoMovimiento && filters.tipoMovimiento !== 'todos_tipos') {
       query = query.eq('tipo_movimiento', filters.tipoMovimiento)
     }
 
     // Aplicar filtro de origen
-    if (filters.origen && filters.origen !== 'todos') {
+    if (filters.origen && filters.origen !== 'todos_origenes') {
+      console.log('[API:getRegistrosWithFilters] 🎯 ORIGEEEEEEEEN =', filters.origen)
       query = query.eq('origen', filters.origen)
     }
 
     // Aplicar filtros de fecha
     if (filters.fechaDesde) {
+      console.log('[API:getRegistrosWithFilters] 📅 FECHA DESDEEEEEEEEEEE >=', filters.fechaDesde)
       query = query.gte('fecha', filters.fechaDesde)
     }
 
     if (filters.fechaHasta) {
+      console.log('[API:getRegistrosWithFilters] 📅 FECHA HASTAAAAAAAAA <=', filters.fechaHasta)
       query = query.lte('fecha', filters.fechaHasta)
     }
 
@@ -75,6 +76,17 @@ export const getRegistrosWithFilters = async (
       console.error('Error obteniendo registros:', error)
       return { data: [], count: 0 }
     }
+
+    // 🐛 DEBUG: Ver qué datos estamos obteniendo
+    const uniqueOrigenes = Array.from(new Set(registrosData?.map(r => r.origen) || []))
+    const uniqueTipos = Array.from(new Set(registrosData?.map(r => r.tipo_movimiento) || []))
+    console.log('[API:getRegistrosWithFilters] 📊 Resultado', {
+      returnedCount: registrosData?.length || 0,
+      totalCount: count,
+      uniqueOrigenes,
+      uniqueTipos,
+      sample: registrosData?.slice(0, 3)?.map(r => ({ id: r.id, origen: r.origen, tipo: r.tipo_movimiento, fecha: r.fecha }))
+    })
 
     if (!registrosData || registrosData.length === 0) {
       return { data: [], count: count || 0 }
@@ -94,16 +106,12 @@ export const getRegistrosWithFilters = async (
         }
 
         // Obtener subcategoría y categoría
-        const [subcategory, category] = await Promise.all([
-          getSubcategoryNameOfDestinatario(destinatarioData.subcategory_id),
-          getCategoryNameOfDestinatario(destinatarioData.category_id)
-        ])
+        const subcategory = await getSubcategoryNameOfDestinatario(destinatarioData.subcategory_id)
 
         return {
           id: destinatarioData.id,
           name: destinatarioData.name,
           subcategory: subcategory?.name || '',
-          category: category?.name || ''
         }
       })
     )
@@ -142,15 +150,9 @@ export const getRegistrosWithFilters = async (
       fecha: registro.fecha,
       created_at: registro.created_at,
       destinatario_id: registro.destinatario_id,
-      destinatarios: destinatarios[index] ? [{
-        name: destinatarios[index]!.name,
-        categorias: [{
-          name: destinatarios[index]!.category
-        }]
-      }] : [],
-      cuenta_contable: cuentasContables[index] ? [{
-        name: cuentasContables[index]!.name
-      }] : []
+      destinatario_name: destinatarios[index]?.name || 'N/A',
+      cuenta_contable_name : cuentasContables[index]?.name || 'N/A',
+      subcategoria: destinatarios[index]?.subcategory || ''
     }))
 
     return { 

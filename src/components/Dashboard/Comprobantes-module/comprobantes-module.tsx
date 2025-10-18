@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Upload, Zap, CheckCircle, Calendar, DollarSign, FileText } from 'lucide-react';
+import { Zap, CheckCircle, Calendar, DollarSign, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,11 +13,10 @@ import { FiltradoComprobantes } from '@/components/Reusable/FiltradoComprobantes
 import { PaginationRegistros } from '@/components/Reusable/PaginationRegistros';
 import { useRegistrosStore } from '@/lib/store/registrosStore';
 import { getRegistrosWithFilters } from '@/utils/registros/getRegistrosWithFilters';
+import { TablaComprobantes } from './tabla-comprobantes';
 
 export function ComprobantesModule() {
   const [activeTab, setActiveTab] = useState('lista');
-  const [uploading, setUploading] = useState(false);
-  const [aiProcessing, setAiProcessing] = useState(false);
   const [kpisLoading, setKpisLoading] = useState(true);
   const [kpiFormat, setKpiFormat] = useState<CustomCardProps[]>([]);
 
@@ -34,11 +33,21 @@ export function ComprobantesModule() {
     setPagination
   } = useRegistrosStore();
 
-  // Cargar registros iniciales
   const loadRegistros = async () => {
     setLoading(true);
     try {
+      
       const { data, count } = await getRegistrosWithFilters(filters, pagination);
+      console.log('[ComprobantesModule] ✅ Data recibida', {
+        returned: data.length,
+        totalCount: count,
+        first: data[0] ? {
+          id: data[0].id,
+          origen: data[0].origen,
+          tipo: data[0].tipo_movimiento,
+          fecha: data[0].fecha
+        } : null
+      });
       setRegistros(data);
       setTotalCount(count);
     } catch (error) {
@@ -101,29 +110,6 @@ export function ComprobantesModule() {
     loadRegistros();
   }, [])
 
-  // Recargar cuando cambie la paginación
-  useEffect(() => {
-    loadRegistros();
-  }, [pagination])
-
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploading(true);
-      // Simular subida de archivo
-      setTimeout(() => {
-        setUploading(false);
-        setAiProcessing(true);
-        // Simular procesamiento IA
-        setTimeout(() => {
-          setAiProcessing(false);
-          console.log('Archivo procesado con IA:', file.name);
-        }, 3000);
-      }, 2000);
-    }
-  };
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -163,84 +149,13 @@ export function ComprobantesModule() {
 
         <TabsContent value="lista" className="space-y-6">
           {/* Filtros avanzados */}
-          <FiltradoComprobantes onFiltersChange={loadRegistros} />
+          <FiltradoComprobantes />
 
           {/* Tabla de comprobantes */}
           {loading ? (
             <TablaComprobantesSkeleton/>
           ) : (
-            <Card className="card-warm border-0 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Destinatario</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Categoría</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Subcategoría</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Monto</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Fecha</th>
-                    <th className="text-left p-4 font-ui font-semibold text-foreground">Cuenta contable</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registros.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                        No se encontraron comprobantes con los filtros aplicados
-                      </td>
-                    </tr>
-                  ) : (
-                    registros.map((registro) => (
-                      <tr key={registro.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                        <td className="p-4">
-                          <div className="flex items-center space-x-2">
-                            <FileText className="w-4 h-4 text-muted-foreground" />
-                            <p className="font-ui text-foreground">
-                              {registro.destinatarios?.[0]?.name || 'N/A'}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <Badge 
-                            className={`text-base border font-ui ${
-                              registro.tipo_movimiento === 'ingreso' 
-                                ? 'bg-green-100 text-green-800 border-green-200' 
-                                : 'bg-red-100 text-red-800 border-red-200'
-                            }`}
-                          >
-                            {registro.tipo_movimiento}
-                          </Badge>
-                        </td>
-                        <td className="p-4">
-                          <p className="bg-primary/10 text-primary text-base lg:max-w-[80%] border-primary/20 font-ui p-1 px-2 rounded-lg text-center">
-                            {registro.origen}
-                          </p>
-                        </td>
-                        <td className="p-4">
-                          <p className="font-ui font-semibold text-foreground">
-                            {formatCurrency(registro.monto.toString())}
-                          </p>
-                        </td>
-                        <td className="p-4">
-                          <p className="font-ui text-foreground">
-                            {new Date(registro.fecha).toLocaleDateString()}
-                          </p>
-                          <p className="font-ui text-sm text-muted-foreground">
-                            Subido: {new Date(registro.created_at).toLocaleDateString()}
-                          </p>
-                        </td>
-                        <td className="p-4">
-                          <p className="font-ui font-semibold text-foreground lg:max-w-[80%] text-pretty">
-                            {registro.cuenta_contable?.[0]?.name || 'N/A'}
-                          </p>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+            <TablaComprobantes registros={registros} />
           )}
 
           {/* Paginación */}
@@ -258,55 +173,6 @@ export function ComprobantesModule() {
             <Card className="card-warm p-6 border-0">
               <h3 className="font-body text-2xl text-foreground mb-6">Subir nuevo comprobante</h3>
               
-              <div className="space-y-6">
-                {/* Drag and drop area */}
-                <div className="border-2 border-dashed border-primary/30 rounded-2xl p-8 text-center hover:border-primary/50 transition-colors">
-                  <Upload className="w-16 h-16 text-primary mx-auto mb-4" />
-                  <h4 className="font-ui font-semibold text-foreground mb-2">
-                    Arrastra tu comprobante aquí
-                  </h4>
-                  <p className="font-ui text-muted-foreground mb-4">
-                    O haz clic para seleccionar archivo
-                  </p>
-                  <p className="font-ui text-sm text-muted-foreground mb-4">
-                    Formatos soportados: PDF, JPG, PNG (máx. 10MB)
-                  </p>
-                  
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="comprobante-upload"
-                  />
-                  <label
-                    htmlFor="comprobante-upload"
-                    className="inline-block button-surf text-white px-6 py-3 rounded-xl font-ui cursor-pointer hover:opacity-90 transition-opacity"
-                  >
-                    {uploading ? 'Subiendo...' : 'Seleccionar archivo'}
-                  </label>
-                </div>
-
-                {/* Estado del procesamiento */}
-                {(uploading || aiProcessing) && (
-                  <Card className="p-4 border border-primary/20 bg-primary/5">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                      <div className="space-y-1">
-                        <p className="font-ui font-medium text-foreground">
-                          {uploading ? 'Subiendo archivo...' : 'Procesando con IA...'}
-                        </p>
-                        <p className="font-ui text-sm text-muted-foreground">
-                          {uploading 
-                            ? 'El archivo se está cargando al servidor' 
-                            : 'Extrayendo datos automáticamente del comprobante'
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                )}
-              </div>
             </Card>
 
             {/* Funcionalidad de IA */}
@@ -363,7 +229,7 @@ export function ComprobantesModule() {
                     {registros.slice(0, 3).map((registro) => (
                       <div key={registro.id} className="flex justify-between items-center">
                         <span className="font-ui text-sm text-foreground">
-                          {registro.destinatarios?.[0]?.name || 'Registro'}
+                          {registro.destinatario_name || 'Registro'}
                         </span>
                         <Badge className="bg-success/10 text-success border-success/20 text-xs">
                           <CheckCircle className="w-3 h-3 mr-1" />

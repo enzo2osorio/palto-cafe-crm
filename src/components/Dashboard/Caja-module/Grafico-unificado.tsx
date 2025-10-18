@@ -40,11 +40,6 @@ export function GraficoUnificado({ data }: GraficoUnificadoProps) {
     },
   ];
 
-  // Calcular totales para mostrar resumen
-  const totalIngresos = data.ingresos.reduce((sum, value) => sum + value, 0);
-  const totalEgresos = data.egresos.reduce((sum, value) => sum + value, 0);
-  const flujoNeto = totalIngresos - totalEgresos;
-
   return (
     <Card className="card-warm p-6 border-0">
       <div className="space-y-6">

@@ -21,18 +21,10 @@ export interface RegistroWithDetails {
   fecha: string
   created_at: string
   destinatario_id: string
-  destinatarios?: {
-    name: string
-    categorias?: {
-      name: string
-    }[]
-  }[]
-  metodos_pago?: {
-    name: string
-  }[]
-  cuenta_contable?: {
-    name: string
-  }[]
+  destinatario_name: string
+  subcategoria?: string
+  metodo_pago_name?: string
+  cuenta_contable_name?: string
 }
 
 interface RegistrosStore {
@@ -69,10 +61,10 @@ interface RegistrosStore {
   getTotalPages: () => number
 }
 
-const initialFilters: RegistroFilter = {
+export const initialFilters: RegistroFilter = {
   searchTerm: '',
-  tipoMovimiento: 'todos',
-  origen: 'todos',
+  tipoMovimiento: 'todos_tipos',
+  origen: 'todos_origenes',
   fechaDesde: undefined,
   fechaHasta: undefined
 }
@@ -121,13 +113,18 @@ export const useRegistrosStore = create<RegistrosStore>((set, get) => ({
     pagination: { ...state.pagination, page: 0 }
   })),
   
-  resetFilters: () => set({
-    filters: initialFilters,
-    pagination: initialPagination
+  resetFilters: () => set(() => {
+    return {
+      filters: initialFilters,
+      pagination: initialPagination
+    }
   }),
   
   // Acciones de paginación
-  setPagination: (pagination) => set({ pagination }),
+  setPagination: (pagination) => set((state) => {
+    console.log('[Store] setPagination', { from: state.pagination, to: pagination });
+    return { pagination };
+  }),
   
   nextPage: () => set((state) => ({
     pagination: {

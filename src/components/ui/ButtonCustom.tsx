@@ -10,7 +10,7 @@ export const ButtonCustom = ({ className, children, ...props }: ButtonCustomProp
     <button 
     className={`bg-success 
       ${props.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-      hover:bg-success/50 text-white transition-colors px-5 py-3 rounded-4xl flex items-center justify-center 
+      hover:bg-success/50 text-white transition-colors px-5 py-2 rounded-4xl flex items-center justify-center 
     ${className}`} 
     {...props}>
       {children}
@@ -25,7 +25,7 @@ export const ButtonCustomSecondary = ({ className, children, ...props }: ButtonC
     type={props.type || 'button'} 
     className={`bg-none hover:bg-success 
       ${props.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-      dark:text-white dark:border-white dark:hover:border-transparent dark:hover:bg-white dark:hover:text-black text-success border-2 border-success hover:text-white transition-colors px-5 py-3 rounded-4xl flex items-center justify-center 
+      dark:text-white dark:border-white dark:hover:border-transparent dark:hover:bg-white dark:hover:text-black text-success border-2 border-success hover:text-white transition-colors px-5 py-2 rounded-4xl flex items-center justify-center 
     ${className}`} 
     {...props}>
       {children}
