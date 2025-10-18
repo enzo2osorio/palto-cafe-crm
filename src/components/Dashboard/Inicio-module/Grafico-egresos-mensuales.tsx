@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card"
 import { LineChart } from '@mui/x-charts/LineChart';
 import type { GraphicProps } from "./inicio-module";
-import { useEffect, useState } from "react";
 
 const margin = { right: 24 };
 export interface GraficoVentasMensualesProps {
