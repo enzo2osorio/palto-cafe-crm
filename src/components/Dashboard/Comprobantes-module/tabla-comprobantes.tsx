@@ -46,7 +46,7 @@ export const TablaComprobantes = ({ registros }: TablaComprobantesProps) => {
                             </p>
                         </td>
                         <td className="p-4">
-                          <p className={` ${registro.origen === 'bot' ? 'bg-red-500/90 text-primary' : 'bg-sky-800 text-primary'} text-base lg:max-w-[80%] border-primary/20 font-ui p-1 px-2 rounded-lg text-center `}>
+                          <p className={` ${registro.tipo_movimiento === "egreso" ? 'bg-red-500/90 text-primary' : 'bg-sky-800 text-primary'} text-base lg:max-w-[80%] border-primary/20 font-ui p-1 px-2 rounded-lg text-center `}>
                             {registro.origen}
                           </p>
                         </td>
@@ -57,10 +57,10 @@ export const TablaComprobantes = ({ registros }: TablaComprobantesProps) => {
                         </td>
                         <td className="p-4">
                           <p className="font-ui text-foreground">
-                            {new Date(registro.fecha).toLocaleDateString()}
+                            {new Date(registro.fecha).toLocaleDateString('es-AR')}
                           </p>
                           <p className="font-ui text-sm text-muted-foreground">
-                            Subido: {new Date(registro.created_at).toLocaleDateString()}
+                            Subido: {new Date(registro.created_at).toLocaleDateString('es-AR')}
                           </p>
                         </td>
                         <td className="p-4">

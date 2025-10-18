@@ -9,21 +9,15 @@ import { getRegistrosWithFilters } from '@/utils/registros/getRegistrosWithFilte
 
 
 export const FiltradoComprobantes = () => {
-  const {
-    filters,
-    setRegistros,
-    resetFilters,
-    setTotalCount
-  } = useRegistrosStore()
+  const { setRegistros, resetFilters, setTotalCount } = useRegistrosStore()
 
   const timerRef = useRef<number | null>(null)
   const [showDateFilters, setShowDateFilters] = useState(false)
-  const [filtersSelected, setFiltersSelected] = useState<RegistroFilter>({
-    ...initialFilters
-  })
+  const [destinatarioSearch, setDestinatarioSearch] = useState('')
+  const [filtersSelected, setFiltersSelected] = useState<RegistroFilter>({ ...initialFilters })
   // Estados locales para las fechas
-  const [localFechaDesde, setLocalFechaDesde] = useState<string>(filters.fechaDesde || '')
-  const [localFechaHasta, setLocalFechaHasta] = useState<string>(filters.fechaHasta || '')
+  const [localFechaDesde, setLocalFechaDesde] = useState<string>(initialFilters.fechaDesde ?? '')
+  const [localFechaHasta, setLocalFechaHasta] = useState<string>(initialFilters.fechaHasta ?? '')
 
   // Opciones para los selects
   const tipoMovimientoOptions: Option[] = [
@@ -38,77 +32,69 @@ export const FiltradoComprobantes = () => {
     { value: 'fudo', label: '📱 Fudo' },
   ]
 
-  const applyFilters = (searchTerm: string, tipoMovimiento: string, origen: string, fechaDesde?: string, fechaHasta?: string) => {
-    setFiltersSelected((prev) => ({
-      ...prev,
-      searchTerm,
-      tipoMovimiento,
-      origen,
-      fechaDesde,
-      fechaHasta
-    }))
+  // Actualiza parcialmente los filtros sin resetear los demás
+  const applyFilters = (updates: Partial<RegistroFilter>) => {
+    setFiltersSelected((prev) => {
+      const next = { ...prev, ...updates }
+      return next
+    })
   }
 
   useEffect(() => {
-   const fetchFilteredRegistros = async () => {
-    if(filtersSelected !== initialFilters){
-      const registrosWithFilters = await getRegistrosWithFilters(filtersSelected, { page: 0, limit: 10 } )
+    const fetchFilteredRegistros = async () => { 
+      const registrosWithFilters = await getRegistrosWithFilters(filtersSelected, { page: 0, limit: 10 })
       setRegistros(registrosWithFilters.data)
       setTotalCount(registrosWithFilters.count)
-      
     }
-   }
     fetchFilteredRegistros()
-  }, [filtersSelected])
+  }, [filtersSelected, setRegistros, setTotalCount])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    setFiltersSelected((prev) => ({ ...prev, searchTerm: value }))
-
-    if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = window.setTimeout(() => {
-      applyFilters(value, filters.tipoMovimiento, filters.origen, filters.fechaDesde, filters.fechaHasta)
-    }, 1000)
+    setDestinatarioSearch(value)
   }
+
+  useEffect(() => {
+    timerRef.current && clearTimeout(timerRef.current)
+    timerRef.current = window.setTimeout(() => {
+      applyFilters({ searchTerm: destinatarioSearch })
+    }, 500)
+  }, [destinatarioSearch])
 
   const handleTipoMovimientoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
-    console.log('[UI] 🎚 tipoMovimiento change', { from: filters.tipoMovimiento, to: value })
-    applyFilters(filters.searchTerm, value, filters.origen, filters.fechaDesde, filters.fechaHasta)
+    applyFilters({ tipoMovimiento: value })
   }
 
   const handleOrigenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value
-    console.log('[UI] 🌐 origen change', { from: filters.origen, to: value })
-    applyFilters(filters.searchTerm, filters.tipoMovimiento, value, filters.fechaDesde, filters.fechaHasta)
+    applyFilters({ origen: value })
   }
 
-  // Nueva función para aplicar filtros de fecha
+  
   const handleApplyDateFilters = () => {
-    setLocalFechaDesde(filters.fechaDesde || '')
-    setLocalFechaHasta(filters.fechaHasta || '')
-    applyFilters(
-      filters.searchTerm,
-      filters.tipoMovimiento,
-      filters.origen,
-      localFechaDesde || undefined,
-      localFechaHasta || undefined
-    )
+    applyFilters({
+      fechaDesde: localFechaDesde || undefined,
+      fechaHasta: localFechaHasta || undefined
+    })
   }
 
 
   const handleResetFilters = () => {
+    setDestinatarioSearch('')
+    setLocalFechaDesde('')
+    setLocalFechaHasta('')
     resetFilters()
     setShowDateFilters(false)
-    applyFilters(filters.searchTerm, filters.tipoMovimiento, filters.origen, undefined, undefined)
+    setFiltersSelected({ ...initialFilters })
   }
 
-  const hasActiveFilters = 
-    filters.searchTerm !== '' ||
-    filters.tipoMovimiento !== 'todos' ||
-    filters.origen !== 'todos' ||
-    filters.fechaDesde ||
-    filters.fechaHasta;
+  const hasActiveFilters =
+    (filtersSelected.searchTerm?.trim?.() || '') !== '' ||
+    filtersSelected.tipoMovimiento !== 'todos_tipos' ||
+    filtersSelected.origen !== 'todos_origenes' ||
+    !!filtersSelected.fechaDesde ||
+    !!filtersSelected.fechaHasta
 
   useEffect(() => {
     return () => {
@@ -125,7 +111,7 @@ export const FiltradoComprobantes = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por nombre del destinatario..."
-            value={filtersSelected.searchTerm}
+            value={destinatarioSearch}
             onChange={handleSearchChange}
             className="pl-10 bg-input-background border-0 rounded-2xl font-ui"
           />
@@ -199,7 +185,7 @@ export const FiltradoComprobantes = () => {
                   onClick={() => {
                     setLocalFechaDesde('')
                     setLocalFechaHasta('')
-                    applyFilters(filters.searchTerm, filters.tipoMovimiento, filters.origen, undefined, undefined)
+                    applyFilters({ fechaDesde: undefined, fechaHasta: undefined })
                   }}
                   className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
                 >
@@ -216,33 +202,33 @@ export const FiltradoComprobantes = () => {
         <div className="flex flex-wrap gap-2">
           <span className="text-sm text-muted-foreground">Filtros activos:</span>
           
-          {filters.searchTerm && (
+          {filtersSelected.searchTerm && (
             <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-              Búsqueda: "{filters.searchTerm}"
+              Búsqueda: "{filtersSelected.searchTerm}"
             </span>
           )}
           
-          {filters.tipoMovimiento !== 'todos_tipos' && (
+          {filtersSelected.tipoMovimiento !== 'todos_tipos' && (
             <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-              Tipo: {tipoMovimientoOptions.find(o => o.value === filters.tipoMovimiento)?.label?.replace(/^📊|💰|💸/, '').trim()}
+              Tipo: {tipoMovimientoOptions.find(o => o.value === filtersSelected.tipoMovimiento)?.label?.replace(/^📊|💰|💸/, '').trim()}
             </span>
           )}
           
-          {filters.origen !== 'todos_origenes' && (
+          {filtersSelected.origen !== 'todos_origenes' && (
             <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-              Origen: {origenOptions.find(o => o.value === filters.origen)?.label?.replace(/^🌐|🤖|📱/, '').trim()}
+              Origen: {origenOptions.find(o => o.value === filtersSelected.origen)?.label?.replace(/^🌐|🤖|📱/, '').trim()}
             </span>
           )}
           
-          {filters.fechaDesde && (
+          {filtersSelected.fechaDesde && (
             <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-              Desde: {filters.fechaDesde}
+              Desde: {filtersSelected.fechaDesde}
             </span>
           )}
           
-          {filters.fechaHasta && (
+          {filtersSelected.fechaHasta && (
             <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-              Hasta: {filters.fechaHasta}
+              Hasta: {filtersSelected.fechaHasta}
             </span>
           )}
         </div>
